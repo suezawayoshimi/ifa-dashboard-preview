@@ -1,0 +1,3606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>fin-adviser v4</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hiragino Sans','Meiryo',sans-serif;background:#F6F6F5;display:flex;min-height:100vh;color:#181716;font-size:14px}
+
+/* ─ Sidebar ─ */
+#sidebar{width:220px;background:#181716;display:flex;flex-direction:column;flex-shrink:0}
+.logo-area{padding:20px 16px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+.logo-mark{width:30px;height:30px;background:#ED7100;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.logo-title{font-size:13px;font-weight:700;color:#fff}
+.logo-sub{font-size:10px;color:rgba(255,255,255,.35)}
+.cl-list{padding:14px 8px;flex:1;overflow-y:auto}
+.cl-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-bottom:8px;padding-left:8px}
+.cl-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;margin-bottom:1px;transition:background .15s}
+.cl-row.active{background:#2C2A29}
+.cl-row:not(.active):hover{background:rgba(255,255,255,.04)}
+.cl-av{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.cl-row.active .cl-av{background:#ED7100}
+.cl-name{font-size:12px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-row.active .cl-name{font-weight:600}
+.cl-net{font-size:10px;color:rgba(255,255,255,.35);margin-top:1px}
+.cl-badges{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.status-dot.updated{background:#ED7100;box-shadow:0 0 0 2px rgba(237,113,0,.2)}
+.ifa-area{padding:12px 16px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:8px}
+.ifa-av{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+.ifa-name{font-size:11px;font-weight:500;color:#fff}
+.ifa-sub{font-size:9px;color:rgba(255,255,255,.35)}
+
+/* ─ Main ─ */
+#main{flex:1;overflow-y:auto;padding:28px 32px}
+.page-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.cl-title{font-size:18px;font-weight:700}
+.meta-row{display:flex;gap:8px;margin-top:5px;align-items:center}
+.badge{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600}
+.meta-upd{font-size:11px;color:#B6B2AF}
+.ai-btn{display:flex;align-items:center;gap:6px;padding:9px 16px;background:#ED7100;border:1px solid #ED7100;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.ai-btn:hover{background:#D4660A}
+.ai-btn:disabled{background:#F9F9F8;border-color:#E7E5E4;color:#B6B2AF;cursor:default}
+
+/* ─ Cards ─ */
+.card{background:#fff;border:1px solid #E7E5E4;border-radius:12px}
+
+/* ─ Changes ─ */
+.changes-card{padding:14px 20px;margin-bottom:12px}
+.changes-title{font-size:11px;font-weight:600;color:#5D5956;margin-bottom:10px}
+.changes-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.change-item{border-radius:8px;padding:10px 12px}
+.change-label{font-size:10px;color:#B6B2AF;margin-bottom:4px}
+.change-value{font-size:16px;font-weight:700;display:flex;align-items:center;gap:4px}
+.change-icon{font-size:12px}
+.change-note{font-size:10px;color:#5D5956;margin-top:3px}
+
+/* ─ KPI ─ */
+.kpi-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.kpi-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.kpi-p{padding:18px 22px}
+.kpi-ps{padding:14px 18px}
+.kpi-label{font-size:11px;color:#5D5956;font-weight:500;margin-bottom:8px}
+.kpi-val{font-size:26px;font-weight:700;letter-spacing:-.02em}
+.kpi-vals{font-size:18px;font-weight:700}
+.kpi-sub{font-size:12px;color:#316FEE;margin-top:6px}
+.kpi-bar-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.kpi-bar-bg{flex:1;height:4px;background:#F9F9F8;border-radius:2px;overflow:hidden}
+.kpi-bar-fill{height:100%;background:#316FEE;border-radius:2px}
+.kpi-pct{font-size:11px;color:#B6B2AF;white-space:nowrap}
+
+/* ─ Goal ─ */
+.goal-card{padding:16px 22px;margin-bottom:12px}
+.goal-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.goal-title{font-size:11px;font-weight:600;color:#5D5956}
+.goal-sub{font-size:12px;color:#B6B2AF;margin-top:2px}
+.goal-pct{font-size:28px;font-weight:800;text-align:right}
+.goal-pct-label{font-size:10px;color:#B6B2AF;text-align:right}
+.goal-bar-bg{height:10px;background:#F9F9F8;border-radius:5px;overflow:hidden;margin-bottom:8px}
+.goal-bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#316FEE,#60A5FA)}
+.goal-stats{display:flex;gap:24px}
+.goal-stat-label{font-size:10px;color:#B6B2AF;margin-bottom:2px}
+.goal-stat-val{font-size:13px;font-weight:700}
+
+/* ─ Asset class ─ */
+.ac-card{padding:14px 22px;margin-bottom:20px}
+.ac-title{font-size:11px;font-weight:600;color:#5D5956;margin-bottom:10px}
+.ac-bar{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:2px;margin-bottom:12px}
+.ac-seg{height:100%}
+.ac-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.ac-item{text-align:center;padding:8px 6px;border-radius:8px;background:#F9F9F8}
+.ac-icon{display:flex;justify-content:center;margin-bottom:6px}
+.ac-icon-mark{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ac-name{font-size:9px;color:#B6B2AF;margin-bottom:3px}
+.ac-amt{font-size:11px;font-weight:700}
+.ac-pct{font-size:10px;font-weight:600;margin-top:2px}
+
+/* ─ Tabs ─ */
+.tabs{display:flex;border-bottom:1px solid #E7E5E4;margin-bottom:16px}
+.tab-btn{padding:10px 16px;border:none;background:transparent;font-size:12px;color:#B6B2AF;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;transition:all .15s}
+.tab-btn.active{color:#181716;font-weight:700;border-bottom-color:#181716}
+
+/* ─ Chart card ─ */
+.chart-card{padding:20px 24px;margin-bottom:20px}
+.chart-title{font-size:12px;font-weight:600;color:#5D5956;margin-bottom:14px}
+
+/* ─ Bar chart ─ */
+.bcw{display:flex;flex-direction:column;gap:6px}
+.br{display:flex;align-items:center;gap:10px}
+.br-lbl{font-size:11px;color:#B6B2AF;width:32px;text-align:right;flex-shrink:0}
+.br-grp{flex:1;display:flex;flex-direction:column;gap:3px}
+.br-trk{flex:1;height:20px;background:#F9F9F8;border-radius:3px;overflow:hidden}
+.br-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:8px}
+.br-txt{font-size:10px;color:#fff;font-weight:600;white-space:nowrap}
+
+/* ─ Dividend bar ─ */
+.db-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.db-lbl{font-size:11px;color:#B6B2AF;width:32px;text-align:right;flex-shrink:0}
+.db-trk{flex:1;height:20px;background:#F9F9F8;border-radius:3px;overflow:hidden}
+.db-fill{height:100%;background:#95C17B;border-radius:3px;display:flex;align-items:center;padding-left:8px}
+.db-txt{font-size:10px;color:#fff;font-weight:600;white-space:nowrap}
+
+/* ─ Category ─ */
+.cat-grid{display:grid;grid-template-columns:200px 1fr;gap:28px;align-items:start}
+.cat-pie-wrap{position:sticky;top:0}
+.cat-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F6F6F5}
+.cat-row:last-child{border-bottom:none}
+.cat-name-grp{display:flex;align-items:center;gap:8px}
+.cat-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.cat-name-txt{font-size:12px;color:#3D3A37}
+.cat-right{display:flex;align-items:center;gap:14px}
+.cat-pct{font-size:13px;font-weight:700;color:#181716;min-width:34px;text-align:right}
+.cat-amt{font-size:11px;color:#B6B2AF;min-width:44px;text-align:right}
+
+/* ─ Account table ─ */
+.acct-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;color:#B6B2AF;font-weight:600;padding:6px 10px;text-align:left;border-bottom:1px solid #E7E5E4}
+td{padding:11px 10px;border-bottom:1px solid #E7E5E4;font-size:12px}
+tr:nth-child(even) td{background:#F9F9F8}
+.type-badge{font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600}
+.sc{display:flex;align-items:center;gap:4px;font-size:11px}
+.sc-dot{width:5px;height:5px;border-radius:50%;display:inline-block}
+.acct-total{display:flex;justify-content:flex-end;gap:12px;margin-top:12px;padding-top:10px;border-top:1px solid #E7E5E4;align-items:center}
+
+/* ─ Div summary ─ */
+.div-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.div-s{background:#F9F9F8;border-radius:8px;padding:12px 14px}
+.div-sl{font-size:10px;color:#B6B2AF;margin-bottom:5px}
+.div-sv{font-size:16px;font-weight:700}
+
+/* ─ AI panel ─ */
+.ai-panel{background:#fff;border:1px solid #E7E5E4;border-left:3px solid #ED7100;border-radius:12px;padding:18px 22px;margin-bottom:20px}
+.ai-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ai-icon{width:20px;height:20px;background:#ED7100;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700}
+.ai-title{font-size:13px;font-weight:700}
+.ai-badge{font-size:10px;color:#ED7100;padding:2px 7px;background:rgba(237,113,0,.1);border-radius:4px;font-weight:600}
+.ai-body{font-size:13px;line-height:1.9;color:#5D5956;white-space:pre-line}
+
+/* ─ Bottom grid ─ */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.bottom-card{padding:18px 20px}
+.bottom-title{font-size:12px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.todo-count{font-size:11px;color:#B6B2AF;font-weight:400}
+.todo-input-row{display:flex;gap:6px;margin-bottom:12px}
+.todo-input{flex:1;font-size:12px;padding:7px 10px;border:1px solid #E7E5E4;border-radius:7px;outline:none;font-family:inherit;color:#181716}
+.todo-input:focus{border-color:#316FEE}
+.date-input{font-size:11px;padding:7px 8px;border:1px solid #E7E5E4;border-radius:7px;outline:none;color:#5D5956;width:110px}
+.todo-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #E7E5E4}
+.todo-cb{margin-top:2px;cursor:pointer;accent-color:#316FEE}
+.todo-text{font-size:12px}
+.todo-text.done{color:#B6B2AF;text-decoration:line-through}
+.todo-due{font-size:10px;color:#B6B2AF;margin-top:2px}
+.todo-del{font-size:10px;color:#B6B2AF;background:none;border:none;cursor:pointer;padding:2px 4px;margin-left:auto;flex-shrink:0}
+.todo-del:hover{color:#D02F3F}
+.memo-area{width:100%;font-size:12px;line-height:1.8;padding:10px 12px;border:1px solid #E7E5E4;border-radius:8px;resize:none;outline:none;font-family:inherit;color:#5D5956;background:#F9F9F8}
+.memo-area:focus{border-color:#316FEE}
+.memo-footer{font-size:10px;color:#B6B2AF;margin-top:6px;text-align:right}
+
+/* ─ 面談メモ ─ */
+.memo-brief{background:#EFF4FF;border:1px solid #C4D7FC;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.memo-brief-hdr{font-size:10px;font-weight:700;color:#316FEE;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.memo-brief-body{font-size:12px;color:#3D3A38;line-height:1.7;white-space:pre-line}
+.memo-rec-btn{width:100%;padding:8px;border:1.5px dashed #C8C4C1;border-radius:8px;background:none;font-size:12px;color:#7A7673;cursor:pointer;text-align:center;margin-bottom:8px;transition:all .15s}
+.memo-rec-btn:hover{border-color:#316FEE;color:#316FEE;background:#EFF4FF}
+.memo-rec-btn.active{border-style:solid;border-color:#316FEE;color:#316FEE;background:#EFF4FF}
+.memo-form{background:#F6F6F5;border:1px solid #E7E5E4;border-radius:8px;padding:12px;margin-bottom:10px}
+.memo-form-row{margin-bottom:10px}
+.memo-form-row:last-child{margin-bottom:0}
+.memo-form-label{font-size:10px;font-weight:700;color:#5D5956;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.memo-form-meta{display:flex;gap:8px;margin-bottom:10px}
+.memo-fmt-sel{flex:1;font-size:11px;padding:5px 8px;border:1px solid #E7E5E4;border-radius:6px;background:#fff;color:#3D3A38;outline:none}
+.memo-fmt-sel:focus{border-color:#316FEE}
+.memo-date-in{font-size:11px;padding:5px 8px;border:1px solid #E7E5E4;border-radius:6px;background:#fff;color:#3D3A38;outline:none;font-family:inherit}
+.memo-date-in:focus{border-color:#316FEE}
+.memo-save-btn{width:100%;padding:8px;background:#316FEE;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px}
+.memo-save-btn:hover{background:#2558d4}
+/* ─ 過去ログ ─ */
+.memo-log-hdr{font-size:10px;font-weight:700;color:#B6B2AF;margin:12px 0 6px;display:flex;align-items:center;gap:6px}
+.memo-log-hdr::before,.memo-log-hdr::after{content:'';flex:1;height:1px;background:#E7E5E4}
+.memo-log-item{border:1px solid #E7E5E4;border-radius:8px;overflow:hidden;margin-bottom:6px}
+.memo-log-trigger{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:none;cursor:pointer;text-align:left;font-family:inherit}
+.memo-log-trigger:hover{background:#F6F6F5}
+.memo-log-date{font-size:11px;font-weight:700;color:#3D3A38}
+.memo-log-fmt{font-size:10px;background:#F0EEEc;color:#7A7673;padding:2px 6px;border-radius:4px}
+.memo-log-preview{font-size:11px;color:#B6B2AF;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.memo-log-arrow{font-size:10px;color:#B6B2AF;transition:transform .15s}
+.memo-log-arrow.open{transform:rotate(90deg)}
+.memo-log-body{padding:10px 12px;background:#FAFAF9;border-top:1px solid #F0EEEC;display:none}
+.memo-log-body.open{display:block}
+.memo-log-section{margin-bottom:8px}
+.memo-log-section:last-child{margin-bottom:0}
+.memo-log-sec-lbl{font-size:10px;font-weight:700;color:#7A7673;margin-bottom:3px}
+.memo-log-sec-txt{font-size:12px;color:#3D3A38;line-height:1.7;white-space:pre-line}
+
+.hidden{display:none!important}
+.income{color:#316FEE}
+
+/* ─ ライフプラン ─ */
+.lp-open-btn{font-size:12px;font-weight:600;color:#316FEE;background:rgba(49,111,238,.08);border:none;border-radius:7px;padding:6px 14px;cursor:pointer;font-family:inherit;transition:all .12s}
+.lp-open-btn:hover{background:rgba(49,111,238,.15)}
+.lp-overlay{position:fixed;inset:0;background:#F4F3F2;z-index:600;overflow-y:auto;animation:coIn .22s ease}
+/* bar */
+.lp-bar{height:52px;background:#fff;border-bottom:1px solid #E7E5E4;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:10}
+.lp-bar-left{display:flex;align-items:center;gap:12px}
+.lp-bar-mark{width:26px;height:26px;background:#ED7100;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.lp-bar-logo{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700}
+.lp-bar-sep{color:#D3D1CF;font-size:14px;font-weight:300}
+.lp-bar-title{font-size:13px;font-weight:700;color:#181716}
+.lp-bar-client{font-size:12px;color:#B6B2AF}
+.lp-exit-btn{font-size:12px;color:#B6B2AF;background:none;border:1px solid #E7E5E4;border-radius:7px;padding:7px 16px;cursor:pointer;font-family:inherit;transition:all .12s}
+.lp-exit-btn:hover{background:#fff;color:#5D5956;border-color:#D4D2D0}
+/* content */
+.lp-content{padding:16px 32px 28px;display:flex;flex-direction:column;gap:12px}
+.lp-main-grid{display:flex;flex-direction:column;gap:12px}
+/* controls */
+.lp-controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid #E7E5E4;border-radius:10px;padding:10px 16px}
+.lp-series-bar{display:flex;gap:6px;flex-wrap:wrap}
+.lp-ser-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;border:1.5px solid #E7E5E4;background:#fff;font-size:11px;color:#B6B2AF;cursor:pointer;font-family:inherit;transition:all .15s}
+.lp-ser-btn:hover{background:#F6F6F5}
+.lp-ser-btn.active-asset{border-color:#181716;background:rgba(24,23,22,.08);color:#181716;font-weight:600}
+.lp-ser-btn.active-cf{border-color:#316FEE;background:rgba(49,111,238,.08);color:#316FEE;font-weight:600}
+.lp-ser-btn.active-scenario{border-color:#ED7100;background:rgba(237,113,0,.08);color:#ED7100;font-weight:600}
+.lp-ctrl-div{width:1px;height:24px;background:#E7E5E4;flex-shrink:0}
+.lp-rate-ctrl{display:flex;align-items:center;gap:8px}
+.lp-ctrl-label{font-size:11px;color:#5D5956;white-space:nowrap;flex-shrink:0}
+.lp-rate-slider{width:90px;accent-color:#316FEE;cursor:pointer}
+.lp-rate-val{font-size:12px;font-weight:700;color:#316FEE;width:34px}
+.lp-endage-sel{font-size:12px;padding:4px 8px;border:1px solid #E7E5E4;border-radius:6px;outline:none;background:#fff;font-family:inherit;color:#181716;cursor:pointer}
+/* chart */
+.lp-chart-card{background:#fff;border:1px solid #E7E5E4;border-radius:12px;padding:16px 20px}
+.lp-chart-wrap{width:100%;min-height:210px}
+/* events */
+.lp-events-card{background:#fff;border:1px solid #E7E5E4;border-radius:12px;padding:14px 20px}
+.lp-events-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.lp-events-title{font-size:12px;font-weight:700;color:#5D5956}
+.lp-add-ev-btn{font-size:12px;font-weight:600;color:#316FEE;background:rgba(49,111,238,.08);border:none;border-radius:7px;padding:6px 14px;cursor:pointer;font-family:inherit}
+.lp-add-ev-btn:hover{background:rgba(49,111,238,.15)}
+.lp-sug-hdr{font-size:10px;font-weight:700;color:#ED7100;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.lp-sug-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#FFF8F0;border:1px solid #FADDB3;border-radius:7px;margin-bottom:4px;font-size:12px;transition:all .15s}
+.lp-sug-item.checked{background:rgba(49,111,238,.06);border-color:#316FEE}
+.lp-sug-check{accent-color:#ED7100;cursor:pointer;width:14px;height:14px;flex-shrink:0}
+.lp-sug-name{flex:1;color:#3D3A38;cursor:pointer}
+.lp-sug-item.checked .lp-sug-name{color:#181716;font-weight:600}
+.lp-sug-detail{font-size:11px;color:#B6B2AF}
+.lp-sug-item.checked .lp-sug-detail{color:#316FEE}
+.lp-sug-edit{font-size:10px;color:#B6B2AF;background:none;border:1px solid #E7E5E4;border-radius:4px;padding:2px 7px;cursor:pointer;font-family:inherit}
+.lp-sug-edit:hover{border-color:#316FEE;color:#316FEE}
+.lp-events-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.lp-ev-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 8px 5px 10px;border-radius:20px;border:1px solid #E7E5E4;background:#F9F9F8;font-size:11px;cursor:pointer;transition:all .12s}
+.lp-ev-chip:hover{border-color:#316FEE;background:#EFF4FF}
+.lp-ev-chip-yr{font-weight:700;color:#316FEE}
+.lp-ev-chip-name{color:#3D3A38}
+.lp-ev-chip-amt{color:#D02F3F;font-weight:600}
+.lp-ev-del{color:#C8C4C1;background:none;border:none;cursor:pointer;font-size:11px;padding:0 2px;line-height:1;margin-left:2px}
+.lp-ev-del:hover{color:#D02F3F}
+.lp-ev-empty{font-size:12px;color:#B6B2AF;padding:4px 0}
+/* CF accordion */
+.lp-cf-card{background:#fff;border:1px solid #E7E5E4;border-radius:12px;overflow:hidden}
+.lp-cf-toggle-btn{width:100%;display:flex;align-items:center;gap:8px;padding:12px 20px;background:#fff;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#5D5956;text-align:left}
+.lp-cf-toggle-btn:hover{background:#F9F9F8}
+.lp-cf-toggle-arrow{font-size:10px;color:#B6B2AF;transition:transform .2s;display:inline-block}
+.lp-cf-inner{display:none;border-top:1px solid #E7E5E4}
+.lp-cf-inner.open{display:block}
+.lp-cf-tbl{border-collapse:collapse;font-size:11px;white-space:nowrap;width:100%}
+.lp-cf-tbl thead th{font-size:10px;font-weight:600;padding:7px 10px;text-align:right;background:#F9F9F8;border-bottom:1px solid #E7E5E4;border-right:1px solid #F0EEEC;color:#B6B2AF;min-width:64px}
+.lp-cf-tbl thead th:first-child{text-align:left;min-width:80px;position:sticky;left:0;z-index:2;background:#F0EEEC}
+.lp-cf-tbl td{padding:6px 10px;text-align:right;border-bottom:1px solid #F6F6F5;border-right:1px solid #F0EEEC;color:#3D3A38}
+.lp-cf-tbl .cf-row-label{text-align:left;color:#5D5956;position:sticky;left:0;background:#fff;z-index:1;border-right:1px solid #E7E5E4}
+.lp-cf-tbl tr.cf-row-subtotal td{background:#F9F9F8;font-weight:700;border-top:1px solid #E7E5E4}
+.lp-cf-tbl tr.cf-row-subtotal .cf-row-label{background:#F9F9F8}
+.lp-cf-tbl tr.cf-row-assets td{font-weight:700;font-size:12px;background:#EFF4FF;border-top:1px solid #C4D7FC}
+.lp-cf-tbl tr.cf-row-assets .cf-row-label{background:#EFF4FF;border-top:1px solid #C4D7FC;font-weight:700}
+.lp-cf-tbl .cf-col-event{background:rgba(237,113,0,.05)!important}
+.lp-cf-tbl .cf-col-event-hdr{background:rgba(237,113,0,.12)!important;color:#C07030!important}
+/* event modal */
+.lp-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:700}
+.lp-modal-box{background:#fff;border-radius:14px;width:400px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden}
+.lp-modal-hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;border-bottom:1px solid #E7E5E4}
+.lp-modal-title{font-size:14px;font-weight:700}
+.lp-modal-close{background:none;border:none;font-size:16px;color:#B6B2AF;cursor:pointer;padding:4px 8px;border-radius:6px}
+.lp-modal-close:hover{background:#F6F6F5}
+.lp-modal-body{padding:14px 20px;display:flex;flex-direction:column;gap:10px}
+.lp-modal-row{display:flex;flex-direction:column;gap:4px}
+.lp-modal-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lp-modal-label{font-size:11px;font-weight:600;color:#5D5956}
+.lp-modal-input,.lp-modal-select{font-size:13px;padding:8px 10px;border:1px solid #E7E5E4;border-radius:7px;outline:none;font-family:inherit;color:#181716;background:#fff;width:100%}
+.lp-modal-input:focus,.lp-modal-select:focus{border-color:#316FEE}
+.lp-modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:10px 20px 16px;border-top:1px solid #E7E5E4;margin-top:4px}
+.lp-modal-cancel{font-size:13px;padding:7px 16px;border:1px solid #E7E5E4;border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;color:#5D5956}
+.lp-modal-submit{font-size:13px;font-weight:600;padding:7px 18px;border:none;border-radius:8px;background:#316FEE;color:#fff;cursor:pointer;font-family:inherit}
+.lp-modal-submit:hover{background:#2558d4}
+.expense-c{color:#D02F3F}
+
+/* ─ Source badges ─ */
+.src-badge{font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;flex-shrink:0}
+.src-mf{background:rgba(49,111,238,.12);color:#316FEE}
+.da-type-btn{flex:1;padding:8px 0;border:none;background:transparent;font-size:12px;font-weight:600;color:#B6B2AF;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.da-type-btn.active{color:#181716;border-bottom-color:#181716}
+.da-liab-section{margin-top:12px;padding-top:12px;border-top:2px dashed #F0EEEC}
+.da-section-label{font-size:10px;font-weight:700;color:#B6B2AF;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.da-item-amt.liab{color:#D02F3F}
+.src-dec{background:rgba(93,89,86,.1);color:#5D5956}
+.src-dec-conf-確定{background:rgba(149,193,123,.15);color:#4a8c3a}
+.src-dec-conf-概算{background:rgba(244,162,97,.15);color:#c07830}
+.src-dec-conf-推計{background:rgba(182,178,175,.2);color:#5D5956}
+
+/* ─ Asset split in KPI ─ */
+.asset-split{margin-top:10px;padding-top:10px;border-top:1px solid #F6F6F5;display:flex;flex-direction:column;gap:5px}
+.split-row{display:flex;align-items:center;gap:7px}
+.split-label{font-size:11px;color:#B6B2AF;flex:1}
+.split-amt{font-size:12px;font-weight:700;color:#181716}
+.split-bar-wrap{width:100%;height:4px;background:#F6F6F5;border-radius:2px;overflow:hidden;display:flex;gap:1px;margin-top:4px}
+.split-bar-mf{height:100%;background:#316FEE;border-radius:1px;transition:width .4s}
+.split-bar-dec{height:100%;background:#B6B2AF;border-radius:1px;transition:width .4s}
+
+/* ─ Declared Assets panel ─ */
+.da-card{padding:16px 22px;margin-bottom:12px}
+.da-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.da-title{font-size:11px;font-weight:600;color:#5D5956}
+.da-completeness{font-size:11px;color:#B6B2AF;margin-left:10px;padding:2px 8px;background:#F9F9F8;border-radius:4px}
+.da-add-btn{font-size:12px;font-weight:600;color:#316FEE;background:rgba(49,111,238,.08);border:none;border-radius:7px;padding:6px 14px;cursor:pointer;font-family:inherit}
+.da-add-btn:hover{background:rgba(49,111,238,.15)}
+.da-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #F6F6F5}
+.da-item:last-child{border-bottom:none}
+.da-cat-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.da-info{flex:1}
+.da-item-label{font-size:13px;font-weight:600;margin-bottom:3px}
+.da-item-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.da-item-note{font-size:11px;color:#B6B2AF;margin-top:3px}
+.da-item-amt{font-size:15px;font-weight:700;text-align:right;flex-shrink:0}
+.da-item-del{font-size:11px;color:#B6B2AF;background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;margin-left:6px;flex-shrink:0}
+.da-item-del:hover{background:rgba(208,47,63,.1);color:#D02F3F}
+.da-empty{font-size:12px;color:#B6B2AF;text-align:center;padding:20px;background:#F9F9F8;border-radius:8px;line-height:1.7}
+
+/* ─ Modal ─ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal-box{background:#fff;border-radius:14px;width:460px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.18);overflow:hidden}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;padding:18px 22px 14px;border-bottom:1px solid #E7E5E4}
+.modal-title{font-size:14px;font-weight:700}
+.modal-close{background:none;border:none;font-size:16px;color:#B6B2AF;cursor:pointer;padding:4px 8px;border-radius:6px}
+.modal-close:hover{background:#F6F6F5;color:#181716}
+.modal-cats{display:flex;flex-wrap:wrap;gap:6px;padding:14px 22px 10px}
+.cat-btn{font-size:12px;padding:6px 12px;border:1px solid #E7E5E4;border-radius:7px;background:#fff;cursor:pointer;font-family:inherit;color:#5D5956;transition:all .12s}
+.cat-btn.active{background:#316FEE;border-color:#316FEE;color:#fff;font-weight:600}
+.cat-btn:not(.active):hover{background:#F6F6F5}
+.modal-form{padding:4px 22px 14px;display:flex;flex-direction:column;gap:10px}
+.form-row{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;color:#5D5956;font-weight:600}
+.form-input,.form-select{font-size:13px;padding:8px 11px;border:1px solid #E7E5E4;border-radius:7px;outline:none;font-family:inherit;color:#181716;background:#fff}
+.form-input:focus,.form-select:focus{border-color:#316FEE}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 22px 18px;border-top:1px solid #E7E5E4;margin-top:4px}
+.modal-cancel{font-size:13px;padding:8px 16px;border:1px solid #E7E5E4;border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;color:#5D5956}
+.modal-cancel:hover{background:#F6F6F5}
+.modal-submit{font-size:13px;font-weight:600;padding:8px 20px;border:none;border-radius:8px;background:#316FEE;color:#fff;cursor:pointer;font-family:inherit}
+.modal-submit:hover{background:#2558c9}
+
+/* ─ Profile Drawer ─ */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:400;display:flex;justify-content:flex-end}
+.drawer{width:380px;background:#fff;height:100%;overflow-y:auto;box-shadow:-8px 0 32px rgba(0,0,0,.12);animation:slideIn .22s ease}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.drawer-hdr{padding:20px 22px 16px;border-bottom:1px solid #E7E5E4;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1}
+.drawer-title{font-size:15px;font-weight:700}
+.drawer-close{background:none;border:none;font-size:18px;color:#B6B2AF;cursor:pointer;padding:4px 8px;border-radius:6px}
+.drawer-close:hover{background:#F6F6F5;color:#181716}
+.drawer-section{padding:16px 22px;border-bottom:1px solid #F6F6F5}
+.drawer-sec-title{font-size:10px;font-weight:700;color:#B6B2AF;letter-spacing:.08em;margin-bottom:10px}
+.drawer-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.drawer-row-label{font-size:11px;color:#B6B2AF;width:72px;flex-shrink:0;padding-top:2px}
+.drawer-row-val{font-size:13px;color:#181716;flex:1;line-height:1.5}
+.family-card{background:#F9F9F8;border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.family-rel{font-size:10px;color:#B6B2AF;margin-bottom:2px}
+.family-name{font-size:13px;font-weight:600}
+.family-note{font-size:11px;color:#B6B2AF;margin-top:1px}
+.profile-note{font-size:12px;color:#5D5956;line-height:1.7;background:#F9F9F8;border-radius:8px;padding:10px 12px}
+
+/* ─ Goal Edit Modal ─ */
+.goal-edit-btn{background:none;border:none;cursor:pointer;color:#B6B2AF;font-size:12px;padding:3px 7px;border-radius:5px;border:1px solid #E7E5E4}
+.goal-edit-btn:hover{background:#F6F6F5;color:#5D5956}
+
+/* ─ KPI 3col ─ */
+.kpi-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.kpi-liab{color:#D02F3F}
+
+
+/* ─ Hover tooltips ─ */
+#chartTooltip,#pieTooltip{position:fixed;background:rgba(24,23,22,.88);color:#fff;font-size:11px;padding:6px 10px;border-radius:7px;pointer-events:none;white-space:nowrap;z-index:9999;display:none;line-height:1.5;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+/* ─ AI advice button ─ */
+.ai-advice-btn{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;color:#fff;background:linear-gradient(135deg,#316FEE,#5B8DEE);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-top:14px;width:100%}
+.ai-advice-btn:hover{opacity:.88}
+.ai-advice-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-advice-btn .ai-icon{font-size:14px}
+.ai-advice-panel{background:#fff;border:1px solid #E7E5E4;border-radius:10px;margin-top:10px;font-size:12px;line-height:1.7;color:#181716;display:none;overflow:hidden}
+.ai-advice-panel.show{display:block}
+.ai-key-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#F9F9F8;border-bottom:1px solid #E7E5E4}
+.ai-key-input{flex:1;font-size:11px;padding:6px 10px;border:1px solid #E7E5E4;border-radius:6px;font-family:monospace;background:#fff;color:#181716;outline:none}
+.ai-key-input:focus{border-color:#316FEE}
+.ai-key-save{font-size:11px;padding:5px 12px;background:#316FEE;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.ai-key-status{font-size:10px;color:#B6B2AF}
+.ai-key-clear{font-size:10px;color:#D02F3F;cursor:pointer;background:none;border:none;font-family:inherit;padding:0}
+.advice-body{padding:16px 18px}
+.advice-section{margin-bottom:14px}
+.advice-section:last-child{margin-bottom:0}
+.advice-section-title{font-size:12px;font-weight:700;color:#181716;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.advice-section-body{font-size:12px;color:#3D3A37;line-height:1.75}
+.advice-section-body ul{margin:0;padding-left:0;list-style:none}
+.advice-section-body li{padding:3px 0 3px 14px;position:relative;}
+.advice-section-body li::before{content:"•";color:#316FEE;font-weight:700;position:absolute;left:0;top:3px}
+.advice-cursor{display:inline-block;width:2px;height:12px;background:#316FEE;animation:blink .7s step-end infinite;vertical-align:middle;margin-left:1px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.holdings-cat-header{background:#F9F9F8;font-size:10px;font-weight:700;color:#5D5956;padding:6px 8px;letter-spacing:.03em}
+.holdings-cat-header td{border-bottom:1px solid #E7E5E4}
+.holdings-cat-header .cat-total{text-align:right;font-weight:800;color:#181716;font-size:12px}
+
+
+/* ─ View toggle (推移/構成) ─ */
+.view-btns{display:flex;gap:3px}
+.view-btn{font-size:11px;padding:3px 10px;border:1px solid #E7E5E4;border-radius:5px;background:#fff;cursor:pointer;font-family:inherit;color:#B6B2AF;transition:all .1s}
+.view-btn.active{background:#316FEE;border-color:#316FEE;color:#fff;font-weight:600}
+/* ─ Period switcher ─ */
+.period-btns{display:flex;gap:4px}
+.period-btn{font-size:11px;padding:4px 10px;border:1px solid #E7E5E4;border-radius:5px;background:#fff;cursor:pointer;font-family:inherit;color:#B6B2AF;transition:all .1s}
+.period-btn.active{background:#181716;border-color:#181716;color:#fff;font-weight:600}
+
+/* ─ Portfolio pie ─ */
+.portfolio-grid{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:center;margin-bottom:16px}
+.portfolio-legend{display:flex;flex-direction:column;gap:7px;margin-top:14px;width:100%}
+.pl-row{display:flex;align-items:center;gap:8px}
+.pl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.pl-name{font-size:12px;color:#5D5956;flex:1;min-width:0;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-pct{font-size:12px;font-weight:700;width:32px;text-align:right}
+.pl-amt{font-size:11px;color:#B6B2AF;width:64px;text-align:right}
+
+/* ─ Holdings ─ */
+.holdings-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:#316FEE;cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 0;margin-bottom:8px}
+.holdings-table{width:100%;border-collapse:collapse;font-size:12px}
+.holdings-table th{font-size:10px;color:#B6B2AF;font-weight:600;padding:5px 8px;text-align:left;border-bottom:1px solid #E7E5E4}
+.holdings-table td{padding:9px 8px;border-bottom:1px solid #F6F6F5}
+.h-gain-pos{color:#316FEE;font-weight:600}
+.h-gain-neg{color:#D02F3F;font-weight:600}
+.h-type-badge{font-size:10px;padding:2px 6px;border-radius:3px;background:#F9F9F8;color:#5D5956}
+
+/* ─ 収支タブ（年ナビゲーター・縦棒グラフ統合） ─ */
+.cf-year-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cf-nav-btn{background:#fff;border:1px solid #E7E5E4;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:18px;color:#5D5956;display:flex;align-items:center;justify-content:center;line-height:1;transition:all .1s}
+.cf-nav-btn:hover:not(:disabled){background:#F6F6F5;border-color:#B6B2AF}
+.cf-nav-btn:disabled{opacity:.25;cursor:not-allowed}
+.cf-year-label{font-size:15px;font-weight:700;color:#181716}
+.cf-kpi-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.cf-kpi{background:#F9F9F8;border-radius:8px;padding:9px 10px;text-align:center}
+.cf-kpi-lbl{font-size:10px;color:#B6B2AF;margin-bottom:4px}
+.cf-kpi-val{font-size:15px;font-weight:700}
+/* ─ 縦棒グラフ ─ */
+.cf-vchart-wrap{position:relative;margin-bottom:6px}
+.cf-vchart{display:flex;align-items:flex-end;gap:3px;height:130px;padding:0 2px;border-bottom:1px solid #E7E5E4;position:relative}
+.cf-vgrp{flex:1;display:flex;gap:1px;align-items:flex-end;cursor:pointer;padding:2px 1px;border-radius:4px 4px 0 0}
+.cf-vgrp:hover{background:rgba(0,0,0,.03)}
+.cf-vgrp.cf-vsel{background:#EFF4FF}
+.cf-vbar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height .2s}
+.cf-vbar-cur-inc{background:#316FEE}
+.cf-vbar-cur-exp{background:#D02F3F}
+.cf-vbar-empty{background:#F0EEEC}
+.cf-line-overlay{position:absolute;top:0;left:0;width:100%;height:130px;pointer-events:none;overflow:visible}
+.cf-xlbl{display:flex;gap:3px;margin-bottom:10px}
+.cf-xlbl-item{flex:1;text-align:center;font-size:9px;color:#B6B2AF;padding-top:3px;cursor:pointer}
+.cf-xlbl-item.cf-vsel{color:#316FEE;font-weight:700}
+.cf-series-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.cf-ser-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;border:1.5px solid #E7E5E4;background:#fff;font-size:11px;color:#B6B2AF;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.cf-ser-btn:hover{background:#F6F6F5}
+.cf-ser-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.cf-ser-dash{width:16px;height:0;border-top:2px dashed #B6B2AF;flex-shrink:0;display:inline-block}
+.cf-ser-btn.active-inc{border-color:#316FEE;background:rgba(49,111,238,.1);color:#316FEE;font-weight:600}
+.cf-ser-btn.active-inc .cf-ser-dash{border-color:#316FEE}
+.cf-ser-btn.active-exp{border-color:#D02F3F;background:rgba(208,47,63,.1);color:#D02F3F;font-weight:600}
+.cf-ser-btn.active-prev{border-color:#E07B7B;background:rgba(224,123,123,.1);color:#C05060;font-weight:600}
+.cf-ser-btn.active-prev .cf-ser-dash{border-color:#E07B7B;border-top-style:dashed}
+/* ─ カテゴリレベルトグル ─ */
+.cf-divider{border:none;border-top:1px solid #F0EEEC;margin:14px 0 10px}
+.cf-cat-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cf-cat-title{font-size:11px;font-weight:700;color:#5D5956}
+.cf-cat-sel-month{font-size:10px;color:#316FEE;font-weight:600}
+.cat-level-toggle{display:flex;border:1px solid #E7E5E4;border-radius:8px;overflow:hidden;background:#F6F6F5}
+.cat-level-btn{padding:4px 12px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;color:#B6B2AF;background:none;transition:all .1s}
+.cat-level-btn.active{background:#fff;color:#181716;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* ─ Shareboard toggle ─ */
+.share-toggle{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#F9F9F8;border-radius:8px;margin-bottom:12px;cursor:pointer;border:1px solid #E7E5E4;font-family:inherit;font-size:12px;color:#5D5956}
+.share-toggle:hover{background:#F0EEEC}
+.share-toggle.active{background:rgba(49,111,238,.08);border-color:rgba(49,111,238,.3);color:#316FEE}
+.share-icon{font-size:14px}
+.toggle-pill{width:28px;height:16px;border-radius:8px;background:#E7E5E4;position:relative;transition:background .15s;margin-left:auto;flex-shrink:0}
+.toggle-pill.on{background:#316FEE}
+.toggle-thumb{width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .15s}
+.toggle-thumb.on{left:14px}
+
+/* ─ Client Mode ─ */
+.client-mode-btn{font-size:12px;font-weight:600;color:#5D5956;background:#F9F9F8;border:1px solid #E7E5E4;border-radius:8px;padding:8px 14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
+.client-mode-btn:hover{background:#EDEBE9;border-color:#D4D2D0}
+.co-overlay{position:fixed;inset:0;background:#F4F3F2;z-index:500;display:flex;flex-direction:column;animation:coIn .22s ease}
+@keyframes coIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+/* bar */
+.co-bar{height:52px;background:#fff;border-bottom:1px solid #E7E5E4;display:flex;align-items:center;justify-content:space-between;padding:0 32px;flex-shrink:0}
+.co-bar-left{display:flex;align-items:center;gap:16px}
+.co-bar-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+.co-bar-mark{width:26px;height:26px;background:#ED7100;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.co-bar-tag{font-size:11px;font-weight:500;color:#B6B2AF;padding:3px 8px;border:1px solid #E7E5E4;border-radius:4px}
+.co-bar-client{font-size:15px;font-weight:700;color:#181716}
+.co-bar-meta{font-size:12px;color:#B6B2AF}
+.co-exit-btn{font-size:12px;color:#B6B2AF;background:none;border:1px solid #E7E5E4;border-radius:7px;padding:7px 16px;cursor:pointer;font-family:inherit;transition:all .12s}
+.co-exit-btn:hover{background:#fff;color:#5D5956;border-color:#D4D2D0}
+/* KPI strip */
+.co-kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-bottom:1px solid #E7E5E4;flex-shrink:0}
+.co-kpi-cell{padding:14px 24px;border-right:1px solid #E7E5E4}
+.co-kpi-cell:last-child{border-right:none}
+.co-kpi-lbl{font-size:10px;color:#B6B2AF;font-weight:500;margin-bottom:5px}
+.co-kpi-v{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.co-kpi-sub{font-size:11px;margin-top:3px}
+/* middle */
+.co-mid{flex:1;display:grid;grid-template-columns:52% 48%;overflow:hidden;min-height:0}
+.co-goal-pane{padding:24px 32px 20px 36px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid #E7E5E4;background:#fff;overflow:hidden}
+.co-chart-pane{padding:20px 28px;display:flex;flex-direction:column;overflow:hidden}
+/* goal pane */
+.co-goal-tag{font-size:10px;color:#B6B2AF;font-weight:600;letter-spacing:.05em;margin-bottom:4px}
+.co-goal-name{font-size:15px;font-weight:700;margin-bottom:14px}
+.co-pct-row{display:flex;align-items:baseline;gap:5px;margin-bottom:3px}
+.co-pct-big{font-size:52px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.co-pct-sym{font-size:20px;font-weight:500;color:#B6B2AF}
+.co-pct-caption{font-size:11px;color:#B6B2AF;margin-bottom:14px}
+.co-prog-bg{height:11px;background:#E7E5E4;border-radius:6px;overflow:hidden;margin-bottom:18px}
+.co-prog-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#316FEE,#60A5FA);transition:width .6s}
+.co-gstats{display:flex;padding-top:14px;border-top:1px solid #F0EEEC}
+.co-gstat{flex:1;text-align:center}
+.co-gstat:not(:last-child){border-right:1px solid #F0EEEC}
+.co-gstat-lbl{font-size:10px;color:#B6B2AF;margin-bottom:3px}
+.co-gstat-v{font-size:15px;font-weight:700}
+/* chart pane */
+.co-chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.co-chart-title{font-size:11px;color:#B6B2AF;font-weight:600}
+.co-chart-latest{font-size:13px;font-weight:700}
+.co-chart-leg{display:flex;gap:12px;margin-bottom:8px}
+.co-chart-leg-i{display:flex;align-items:center;gap:4px;font-size:11px;color:#5D5956}
+/* cashflow section */
+.co-cf{background:#F9F9F8;border-radius:10px;padding:12px 16px;margin-top:12px}
+.co-cf-title{font-size:10px;color:#B6B2AF;font-weight:600;margin-bottom:8px}
+.co-cf-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.co-cf-row:last-child{margin-bottom:0}
+.co-cf-label{font-size:11px;color:#5D5956;width:56px;flex-shrink:0}
+.co-cf-bar-bg{flex:1;height:14px;background:#E7E5E4;border-radius:3px;overflow:hidden}
+.co-cf-bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px}
+.co-cf-bar-txt{font-size:9px;color:#fff;font-weight:600;white-space:nowrap}
+.co-cf-amt{font-size:12px;font-weight:700;width:60px;text-align:right;flex-shrink:0}
+/* asset class strip */
+.co-ac-strip{background:#fff;border-top:1px solid #E7E5E4;padding:12px 36px;flex-shrink:0}
+.co-ac-title{font-size:10px;color:#B6B2AF;font-weight:600;margin-bottom:8px}
+.co-ac-bar{height:7px;border-radius:4px;overflow:hidden;display:flex;gap:1px;margin-bottom:10px}
+.co-ac-grid{display:flex;gap:0}
+.co-ac-item{flex:1;text-align:center;padding:0 4px}
+.co-ac-item:not(:last-child){border-right:1px solid #F0EEEC}
+.co-ac-icon{display:flex;justify-content:center;margin-bottom:4px}
+.co-ac-name{font-size:9px;color:#B6B2AF;margin-bottom:2px}
+.co-ac-amt{font-size:12px;font-weight:700}
+.co-ac-pct{font-size:10px;font-weight:600;margin-top:1px}
+/* footer */
+.co-footer{background:#fff;border-top:1px solid #E7E5E4;padding:8px 32px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.co-footer-brand{font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px}
+.co-footer-note{font-size:10px;color:#B6B2AF}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="logo-area">
+    <div class="logo-mark">MF</div>
+    <div><div class="logo-title">FinAdviser</div><div class="logo-sub">MF ME × Claude</div></div>
+  </div>
+  <div class="cl-list">
+    <div class="cl-label">顧客一覧</div>
+    <div id="clList"></div>
+  </div>
+  <div class="ifa-area">
+    <div class="ifa-av">山</div>
+    <div><div class="ifa-name">山田 太郎 IFA</div><div class="ifa-sub">担当顧客 4名</div></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- Header -->
+  <div class="page-hdr">
+    <div>
+      <div class="cl-title" id="cTitle" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px" onclick="openProfile()">田中 誠一 様 <span style="font-size:12px;color:#B6B2AF;font-weight:400">詳細 ›</span></div>
+      <div class="meta-row">
+        <span style="font-size:12px;color:#5D5956" id="cAge">52歳</span>
+        <span class="meta-upd" id="cMeeting">前回面談: 2026-02-15（1ヶ月前）</span>
+        <span class="badge" id="cTodoBadge" style="background:rgba(208,47,63,.1);color:#D02F3F">TODO 2件</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="client-mode-btn" onclick="toggleClientMode()">👤 クライアントモード</button>
+    </div>
+  </div>
+
+  <!-- Changes -->
+  <div class="card changes-card">
+    <div class="changes-title">前回面談からの変化 <span id="meetingDate" style="font-weight:400;color:#B6B2AF;margin-left:8px">2026-02-15 → 今日</span></div>
+    <div class="changes-grid" id="changesGrid">
+      <div class="change-item" style="background:rgba(49,111,238,.08)"><div class="change-label">純資産</div><div class="change-value income"><span class="change-icon">↑</span>+152万円</div><div class="change-note">前月比 +1.2%</div></div>
+      <div class="change-item" style="background:rgba(208,47,63,.08)"><div class="change-label">月間支出</div><div class="change-value expense-c"><span class="change-icon">⚠</span>+42万円</div><div class="change-note">増加傾向 ⚠️</div></div>
+      <div class="change-item" style="background:rgba(208,47,63,.08)"><div class="change-label">国内株比率</div><div class="change-value expense-c"><span class="change-icon">⚠</span>+2%</div><div class="change-note">目標比オーバー</div></div>
+      <div class="change-item" style="background:rgba(182,178,175,.1)"><div class="change-label">積み残しTODO</div><div class="change-value" style="color:#B6B2AF"><span class="change-icon">—</span>2件</div><div class="change-note">前回面談より</div></div>
+    </div>
+  </div>
+
+  <!-- KPI top: 3col -->
+  <div class="kpi-3col">
+    <div class="card kpi-p">
+      <div class="kpi-label">総資産</div>
+      <div class="kpi-val" id="kTotal">¥130,765,015</div>
+      <div class="asset-split" style="margin-top:8px">
+        <div style="display:flex;height:4px;border-radius:2px;overflow:hidden;gap:1px;margin-bottom:6px">
+          <div id="kBarMf" style="height:100%;background:#316FEE;border-radius:2px;transition:width .4s;width:62%"></div>
+          <div id="kBarDec" style="height:100%;background:#B6B2AF;border-radius:2px;transition:width .4s;width:38%"></div>
+        </div>
+        <div class="split-row"><span class="src-badge src-mf">ME</span><span class="split-label">ME連携</span><span class="split-amt" id="kMfAmt">¥8,077万</span></div>
+        <div class="split-row"><span class="src-badge src-dec">申告</span><span class="split-label">申告資産</span><span class="split-amt" id="kDecAmt">¥5,000万</span></div>
+      </div>
+    </div>
+    <div class="card kpi-p">
+      <div class="kpi-label">負債</div>
+      <div class="kpi-val kpi-liab" id="kLiab">¥28,000,000</div>
+      <div class="asset-split" style="margin-top:8px">
+        <div class="split-row"><span class="src-badge src-mf">ME</span><span class="split-label">ME連携</span><span class="split-amt" id="kLiabMeAmt">¥2,800万</span></div>
+        <div class="split-row" id="kLiabDecRow"><span class="src-badge src-dec">申告</span><span class="split-label">申告負債</span><span class="split-amt" id="kLiabDecAmt">¥0</span></div>
+      </div>
+    </div>
+    <div class="card kpi-p">
+      <div class="kpi-label">純資産（ME＋申告）</div>
+      <div class="kpi-val income" id="kNet">¥102,765,015</div>
+      <div class="asset-split" style="margin-top:8px">
+        <div style="display:flex;height:4px;border-radius:2px;overflow:hidden;gap:1px;margin-bottom:6px">
+          <div id="kNetBarMf" style="height:100%;background:#316FEE;border-radius:2px;transition:width .4s;width:50%"></div>
+          <div id="kNetBarDec" style="height:100%;background:#B6B2AF;border-radius:2px;transition:width .4s;width:50%"></div>
+        </div>
+        <div class="split-row"><span class="src-badge src-mf">ME</span><span class="split-label">ME純資産</span><span class="split-amt" id="kNetMeAmt">—</span></div>
+        <div class="split-row"><span class="src-badge src-dec">申告</span><span class="split-label">申告純資産</span><span class="split-amt" id="kNetDecAmt">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Goal -->
+  <div class="card goal-card">
+    <div class="goal-hdr">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="goal-title">目標 vs 現状</div><button class="goal-edit-btn" onclick="openGoalEdit()">✎ 編集</button></div>
+        <div class="goal-sub" id="goalSub">老後資金：¥2億（65歳まで・残り13年）</div>
+      </div>
+      <div>
+        <div class="goal-pct income" id="goalPct">51<span style="font-size:14px;font-weight:500">%</span></div>
+        <div class="goal-pct-label">達成率</div>
+      </div>
+    </div>
+    <div class="goal-bar-bg"><div class="goal-bar-fill" id="goalBar" style="width:51%"></div></div>
+    <div class="goal-stats">
+      <div><div class="goal-stat-label">現在の純資産</div><div class="goal-stat-val income" id="goalCurrent">¥1.0億</div></div>
+      <div><div class="goal-stat-label">残り不足額</div><div class="goal-stat-val" id="goalGap">¥9,723万</div></div>
+      <div><div class="goal-stat-label">必要月間積立（概算）</div><div class="goal-stat-val" id="goalMonthly">¥62万</div></div>
+    </div>
+    <div style="text-align:right;margin-top:10px;padding-top:10px;border-top:1px solid #F6F6F5">
+      <button class="lp-open-btn" onclick="openLifePlan()">📊 ライフプランシミュレーションを開く →</button>
+    </div>
+  </div>
+
+  <!-- Shareboard Toggle (田中・山本のみ表示) -->
+  <div id="shareToggleWrap" class="hidden">
+    <button class="share-toggle" id="shareToggle" onclick="toggleShareboard()">
+      <span class="share-icon">👫</span>
+      <span id="shareToggleLabel">MF シェアボード連携（パートナー資産を含める）</span>
+      <div class="toggle-pill" id="togglePill"><div class="toggle-thumb" id="toggleThumb"></div></div>
+    </button>
+  </div>
+
+  <!-- Declared Assets Panel -->
+  <div class="card da-card">
+    <div class="da-hdr">
+      <div style="display:flex;align-items:center">
+        <span class="da-title">申告資産</span>
+        <span class="da-completeness" id="daCompleteness">資産把握率 62%</span>
+      </div>
+      <button class="da-add-btn" onclick="openDeclaredModal()">＋ 追加</button>
+    </div>
+    <div id="daList"></div>
+    <div class="da-empty hidden" id="daEmpty">申告資産はまだ登録されていません。「＋ 追加」から不動産・年金・保険などを入力してください。</div>
+  </div>
+
+  <!-- KPI bottom -->
+  <div class="kpi-3">
+    <div class="card kpi-ps"><div class="kpi-label">収入（今月）</div><div class="kpi-vals income" id="kMonthInc">—</div></div>
+    <div class="card kpi-ps"><div class="kpi-label">支出（今月）</div><div class="kpi-vals expense-c" id="kMonthExp">—</div></div>
+    <div class="card kpi-ps"><div class="kpi-label">収支（今月）</div><div class="kpi-vals" id="kMonthBal">—</div></div>
+  </div>
+
+  <!-- Asset class -->
+  <div class="card ac-card">
+    <div class="ac-title">資産クラス内訳</div>
+    <div class="ac-bar" id="acBar"></div>
+    <div class="ac-grid" id="acGrid"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('assets',this)">資産推移</button>
+    <button class="tab-btn" onclick="switchTab('cashflow',this)">収支</button>
+    <button class="tab-btn" onclick="switchTab('accounts',this)">口座一覧</button>
+    <button class="tab-btn" onclick="switchTab('dividend',this)">配当</button>
+  </div>
+
+  <!-- Tooltip overlays -->
+  <div id="chartTooltip"></div>
+  <div id="pieTooltip"></div>
+  <!-- Assets tab -->
+  <div id="tab-assets" class="card chart-card">
+    <!-- ポートフォリオ円グラフ -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="chart-title" style="margin-bottom:0">ポートフォリオ構成</div>
+    </div>
+    <div class="portfolio-grid">
+      <svg id="portfolioSvg" width="220" height="220" viewBox="-110 -110 220 220"></svg>
+      <div class="portfolio-legend" id="portfolioLegend"></div>
+    </div>
+    <!-- 保有銘柄 -->
+    <button class="holdings-toggle" id="holdingsToggle" onclick="toggleHoldings()">▶ 保有銘柄・ファンド詳細を表示</button>
+    <div id="holdingsSection" class="hidden">
+      <table class="holdings-table">
+        <thead><tr><th>銘柄名</th><th>種別</th><th style="text-align:right">評価額</th><th style="text-align:right">損益</th></tr></thead>
+        <tbody id="holdingsBody"></tbody>
+      </table>
+    </div>
+    <!-- 推移グラフ -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="chart-title" style="margin-bottom:0">資産推移</div>
+        <div class="view-btns">
+          <button class="view-btn active" id="viewBtnLine" onclick="switchView('line',this)">推移</button>
+          <button class="view-btn" id="viewBtnStack" onclick="switchView('stack',this)">構成</button>
+        </div>
+      </div>
+      <div class="period-btns">
+        <button class="period-btn active" onclick="switchPeriod('6m',this)">6ヶ月</button>
+        <button class="period-btn" onclick="switchPeriod('1y',this)">1年</button>
+        <button class="period-btn" onclick="switchPeriod('3y',this)">3年</button>
+        <button class="period-btn" onclick="switchPeriod('5y',this)">5年</button>
+      </div>
+    </div>
+    <svg id="trendSvg" width="100%" height="190" style="overflow:visible;display:block"></svg>
+    <!-- AI Briefing -->
+    <button class="ai-advice-btn" id="aiAdviceBtn" onclick="generateAiAdvice()"><span class="ai-icon">✦</span>面談前AIブリーフィング生成</button>
+    <div class="ai-advice-panel" id="aiAdvicePanel">
+      <div class="ai-key-bar" id="aiKeyBar">
+        <input class="ai-key-input" id="aiKeyInput" type="password" placeholder="Anthropic API Key (sk-ant-...)" />
+        <button class="ai-key-save" onclick="saveApiKey()">設定</button>
+      </div>
+      <div class="advice-body" id="adviceBody" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Cashflow + Category (unified) -->
+  <div id="tab-cashflow" class="card chart-card hidden">
+
+    <!-- 月ナビゲーター -->
+    <div class="cf-year-nav">
+      <button class="cf-nav-btn" id="cfNavPrev" onclick="navCfMonth(-1)" title="前の月へ">‹</button>
+      <span class="cf-year-label" id="cfYearLabel">2026年3月</span>
+      <button class="cf-nav-btn" id="cfNavNext" onclick="navCfMonth(1)" title="次の月へ">›</button>
+    </div>
+
+    <!-- KPI strip（選択月） -->
+    <div class="cf-kpi-row">
+      <div class="cf-kpi"><div class="cf-kpi-lbl">月収入（推計）</div><div class="cf-kpi-val income" id="cfIncome">—</div></div>
+      <div class="cf-kpi"><div class="cf-kpi-lbl">月支出</div><div class="cf-kpi-val expense-c" id="cfExpense">—</div></div>
+      <div class="cf-kpi"><div class="cf-kpi-lbl">収支差</div><div class="cf-kpi-val" id="cfBalance">—</div></div>
+    </div>
+
+    <!-- 収支シリーズ選択トグル -->
+    <div class="cf-series-bar">
+      <button id="cfSerInc" class="cf-ser-btn active-inc" onclick="toggleCfSeries('income')">
+        <span class="cf-ser-dot" style="background:#316FEE"></span>収入
+      </button>
+      <button id="cfSerExp" class="cf-ser-btn active-exp" onclick="toggleCfSeries('expense')">
+        <span class="cf-ser-dot" style="background:#D02F3F"></span>支出
+      </button>
+      <button id="cfSerPrev" class="cf-ser-btn" onclick="toggleCfSeries('prevyear')">
+        <span class="cf-ser-dash"></span>前年比較
+      </button>
+    </div>
+
+    <!-- 縦棒グラフ（12ヶ月） + 折れ線オーバーレイ -->
+    <div class="cf-vchart-wrap">
+      <div class="cf-vchart" id="cfVChart"></div>
+      <svg id="cfLineOverlay" class="cf-line-overlay"></svg>
+      <div class="cf-xlbl" id="cfXLabels"></div>
+    </div>
+
+    <hr class="cf-divider"/>
+
+    <!-- 支出カテゴリ内訳 -->
+    <div class="cf-cat-hdr">
+      <div>
+        <div class="cf-cat-title">支出カテゴリ内訳</div>
+        <div class="cf-cat-sel-month" id="cfCatSelMonth"></div>
+      </div>
+      <div class="cat-level-toggle">
+        <button class="cat-level-btn active" id="catLvlBig" onclick="switchCatLevel('big',this)">大カテゴリ</button>
+        <button class="cat-level-btn" id="catLvlMid" onclick="switchCatLevel('mid',this)">中カテゴリ</button>
+      </div>
+    </div>
+    <div class="cat-grid">
+      <div class="cat-pie-wrap"><svg id="expPieSvg" width="200" height="200" viewBox="-100 -100 200 200"></svg></div>
+      <div id="expCatList"></div>
+    </div>
+
+    <!-- AI Cashflow Advice -->
+    <button class="ai-advice-btn" id="cfAdviceBtn" onclick="generateCfAdvice()"><span class="ai-icon">✦</span>家計AIアドバイス生成</button>
+    <div class="ai-advice-panel" id="cfAdvicePanel">
+      <div class="ai-key-bar" id="cfKeyBar">
+        <input class="ai-key-input" id="cfKeyInput" type="password" placeholder="Anthropic API Key (sk-ant-...)" />
+        <button class="ai-key-save" onclick="saveCfApiKey()">設定</button>
+      </div>
+      <div class="advice-body" id="cfAdviceBody" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Accounts -->
+  <div id="tab-accounts" class="card chart-card hidden">
+    <div class="acct-hdr"><div class="chart-title" style="margin-bottom:0">連携口座一覧</div><span style="font-size:11px;color:#B6B2AF">6件</span></div>
+    <table>
+      <thead><tr><th>金融機関</th><th>種別</th><th style="text-align:right">残高</th><th>最終集計</th><th>ステータス</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:500">三菱UFJ銀行</td><td><span class="type-badge" style="background:rgba(107,155,210,.15);color:#6B9BD2">銀行</span></td><td style="text-align:right;font-weight:700">¥12,345,678</td><td style="color:#B6B2AF">2分前</td><td><span class="sc" style="color:#316FEE"><span class="sc-dot" style="background:#316FEE"></span>正常</span></td></tr>
+        <tr><td style="font-weight:500">野村証券</td><td><span class="type-badge" style="background:rgba(49,111,238,.12);color:#316FEE">証券</span></td><td style="text-align:right;font-weight:700">¥89,012,345</td><td style="color:#B6B2AF">1時間前</td><td><span class="sc" style="color:#316FEE"><span class="sc-dot" style="background:#316FEE"></span>正常</span></td></tr>
+        <tr><td style="font-weight:500">SBI証券</td><td><span class="type-badge" style="background:rgba(49,111,238,.12);color:#316FEE">証券</span></td><td style="text-align:right;font-weight:700">¥18,765,432</td><td style="color:#B6B2AF">2時間前</td><td><span class="sc" style="color:#316FEE"><span class="sc-dot" style="background:#316FEE"></span>正常</span></td></tr>
+        <tr><td style="font-weight:500">三井住友カード</td><td><span class="type-badge" style="background:rgba(90,153,64,.15);color:#5a9940">クレカ</span></td><td style="text-align:right;font-weight:700;color:#D02F3F">¥1,234,567</td><td style="color:#B6B2AF">3時間前</td><td><span class="sc" style="color:#316FEE"><span class="sc-dot" style="background:#316FEE"></span>正常</span></td></tr>
+        <tr><td style="font-weight:500">ゆうちょ銀行</td><td><span class="type-badge" style="background:rgba(107,155,210,.15);color:#6B9BD2">銀行</span></td><td style="text-align:right;font-weight:700">¥6,543,210</td><td style="color:#B6B2AF">昨日</td><td><span class="sc" style="color:#D02F3F"><span class="sc-dot" style="background:#D02F3F"></span>要確認</span></td></tr>
+        <tr><td style="font-weight:500">楽天カード</td><td><span class="type-badge" style="background:rgba(90,153,64,.15);color:#5a9940">クレカ</span></td><td style="text-align:right;font-weight:700;color:#D02F3F">¥987,654</td><td style="color:#B6B2AF">昨日</td><td><span class="sc" style="color:#316FEE"><span class="sc-dot" style="background:#316FEE"></span>正常</span></td></tr>
+      </tbody>
+    </table>
+    <div class="acct-total"><span style="font-size:12px;color:#5D5956">口座残高合計</span><span style="font-size:14px;font-weight:700">¥124,444,766</span></div>
+  </div>
+
+  <!-- Dividend -->
+  <div id="tab-dividend" class="card chart-card hidden">
+    <div class="div-sum">
+      <div class="div-s"><div class="div-sl">年間配当収入（実績）</div><div class="div-sv income">¥1,990,000</div></div>
+      <div class="div-s"><div class="div-sl">月平均配当</div><div class="div-sv">¥165,833</div></div>
+      <div class="div-s"><div class="div-sl">配当利回り（概算）</div><div class="div-sv">1.51%</div></div>
+    </div>
+    <div class="chart-title">月次配当収入（過去12ヶ月）</div>
+    <div>
+      <div class="db-row"><span class="db-lbl">4月</span><div class="db-trk"><div class="db-fill" style="width:39%"><span class="db-txt">¥12万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">5月</span><div class="db-trk"><div class="db-fill" style="width:27%"><span class="db-txt">¥8.5万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">6月</span><div class="db-trk"><div class="db-fill" style="width:79%"><span class="db-txt">¥24.5万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">7月</span><div class="db-trk"><div class="db-fill" style="width:42%"><span class="db-txt">¥13万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">8月</span><div class="db-trk"><div class="db-fill" style="width:31%"><span class="db-txt">¥9.5万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">9月</span><div class="db-trk"><div class="db-fill" style="width:100%"><span class="db-txt">¥31万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">10月</span><div class="db-trk"><div class="db-fill" style="width:45%"><span class="db-txt">¥14万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">11月</span><div class="db-trk"><div class="db-fill" style="width:35%"><span class="db-txt">¥11万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">12月</span><div class="db-trk"><div class="db-fill" style="width:90%"><span class="db-txt">¥28万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">1月</span><div class="db-trk"><div class="db-fill" style="width:40%"><span class="db-txt">¥12.5万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">2月</span><div class="db-trk"><div class="db-fill" style="width:29%"><span class="db-txt">¥9万</span></div></div></div>
+      <div class="db-row"><span class="db-lbl">3月</span><div class="db-trk"><div class="db-fill" style="width:84%"><span class="db-txt">¥26万</span></div></div></div>
+    </div>
+  </div>
+
+  <!-- AI panel -->
+  <div class="ai-panel hidden" id="aiPanel">
+    <div class="ai-hdr"><div class="ai-icon">✦</div><span class="ai-title">Claude AI アドバイス</span><span class="ai-badge">MF ME 連携済み</span></div>
+    <div class="ai-body" id="aiBody"></div>
+  </div>
+
+  <!-- Bottom: TODO + Memo -->
+  <div class="bottom-grid">
+    <div class="card bottom-card">
+      <div class="bottom-title">TODO・アクション <span class="todo-count" id="todoCount">2件未完了</span></div>
+      <div class="todo-input-row">
+        <input class="todo-input" id="todoInput" placeholder="アクションを追加... (Enterで追加)" onkeydown="addTodo(event)"/>
+        <input type="date" class="date-input" id="dueInput"/>
+      </div>
+      <div id="todoList"></div>
+    </div>
+    <div class="card bottom-card">
+      <div class="bottom-title">面談メモ</div>
+
+      <!-- ④ 面談前ブリーフ -->
+      <div class="memo-brief" id="memoBrief">
+        <div class="memo-brief-hdr">🔜 前回からの引き継ぎ <span id="memoBriefDate" style="font-weight:400;color:#316FEE"></span></div>
+        <div class="memo-brief-body" id="memoBriefBody"></div>
+      </div>
+
+      <!-- ① 今日の面談を記録ボタン -->
+      <button class="memo-rec-btn" id="memoRecBtn" onclick="toggleMemoForm()">＋ 今日の面談を記録する</button>
+
+      <!-- ② 構造化メモ入力フォーム -->
+      <div class="memo-form hidden" id="memoForm">
+        <div class="memo-form-meta">
+          <input type="date" class="memo-date-in" id="memoFormDate"/>
+          <select class="memo-fmt-sel" id="memoFormFmt">
+            <option value="対面">対面</option>
+            <option value="オンライン">オンライン</option>
+            <option value="電話">電話</option>
+          </select>
+        </div>
+        <div class="memo-form-row">
+          <div class="memo-form-label">📋 顧客からの申告・相談内容</div>
+          <textarea class="memo-area" id="memoHearing" rows="3" placeholder="ヒアリングした内容・顧客の意向・懸念を記録..."></textarea>
+        </div>
+        <div class="memo-form-row">
+          <div class="memo-form-label">💡 提案・アドバイスした内容</div>
+          <textarea class="memo-area" id="memoAdvice" rows="3" placeholder="提案した内容・根拠・顧客の反応を記録..."></textarea>
+        </div>
+        <div class="memo-form-row">
+          <div class="memo-form-label">🔜 次回面談への引き継ぎ</div>
+          <textarea class="memo-area" id="memoFollowup" rows="2" placeholder="次回確認すること・持参資料・依頼事項を記録..."></textarea>
+        </div>
+        <button class="memo-save-btn" onclick="saveMemoLog()">この面談を保存する</button>
+      </div>
+
+      <!-- ① 過去の面談ログ -->
+      <div class="memo-log-hdr">過去の面談</div>
+      <div id="memoLogList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Life Plan Overlay -->
+<div id="lpOverlay" class="lp-overlay hidden">
+  <div class="lp-bar">
+    <div class="lp-bar-left">
+      <div class="lp-bar-logo"><div class="lp-bar-mark">MF</div>FinAdviser</div>
+      <span class="lp-bar-sep">|</span>
+      <span class="lp-bar-title">ライフプランシミュレーション</span>
+      <span class="lp-bar-client" id="lpClientName"></span>
+    </div>
+    <button class="lp-exit-btn" onclick="closeLifePlan()">← 閉じる</button>
+  </div>
+  <div class="lp-content">
+    <!-- Controls -->
+    <div class="lp-controls">
+      <div class="lp-series-bar">
+        <button id="lpSerAssets" class="lp-ser-btn active-asset" onclick="toggleLPSeries('assets')">
+          <span style="width:12px;height:3px;background:#181716;border-radius:2px;display:inline-block;flex-shrink:0"></span>資産残高
+        </button>
+<button id="lpSerScenario" class="lp-ser-btn" onclick="toggleLPSeries('scenario')">
+          <span style="width:12px;height:0;border-top:2px dashed #ED7100;display:inline-block;flex-shrink:0"></span>楽観/悲観
+        </button>
+      </div>
+      <div class="lp-ctrl-div"></div>
+      <div class="lp-rate-ctrl">
+        <span class="lp-ctrl-label">運用利回り</span>
+        <input type="range" id="lpRateSlider" class="lp-rate-slider" min="0" max="8" step="0.5" value="3" oninput="onLPRateChange(this.value)">
+        <span id="lpRateVal" class="lp-rate-val">3.0%</span>
+      </div>
+      <div class="lp-ctrl-div"></div>
+      <div class="lp-rate-ctrl">
+        <span class="lp-ctrl-label">〜</span>
+        <select id="lpEndAge" class="lp-endage-sel" onchange="onLPRateChange(document.getElementById('lpRateSlider').value)">
+          <option value="80">80歳</option>
+          <option value="85">85歳</option>
+          <option value="90" selected>90歳</option>
+          <option value="95">95歳</option>
+          <option value="100">100歳</option>
+        </select>
+      </div>
+    </div>
+    <!-- Chart + Events (横並び) -->
+    <div class="lp-main-grid">
+      <div class="lp-chart-card">
+        <div id="lpChartWrap" class="lp-chart-wrap"></div>
+      </div>
+      <div class="lp-events-card">
+        <div class="lp-events-hdr">
+          <span class="lp-events-title">ライフイベント</span>
+          <button class="lp-add-ev-btn" onclick="openLPEventModal(null)">＋ 追加</button>
+        </div>
+        <div id="lpSuggestions"></div>
+        <div id="lpEvManualWrap" style="display:none">
+          <div style="font-size:10px;font-weight:700;color:#B6B2AF;margin:10px 0 6px;letter-spacing:.05em">✏️ 手動追加</div>
+          <div id="lpEventsList" class="lp-events-list"></div>
+        </div>
+      </div>
+    </div>
+    <!-- CF Detail (always visible) -->
+    <div class="lp-cf-card">
+      <div style="padding:10px 20px 4px;font-size:12px;font-weight:700;color:#5D5956">キャッシュフロー詳細</div>
+      <div id="lpCFInner" class="lp-cf-inner open"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Life Plan Event Modal -->
+<div id="lpEventModal" class="lp-modal-overlay hidden" onclick="if(event.target===this)closeLPEventModal()">
+  <div class="lp-modal-box">
+    <div class="lp-modal-hdr">
+      <span class="lp-modal-title" id="lpModalTitle">イベントを追加</span>
+      <button class="lp-modal-close" onclick="closeLPEventModal()">✕</button>
+    </div>
+    <div class="lp-modal-body">
+      <div class="lp-modal-row">
+        <div class="lp-modal-label">種別</div>
+        <select id="lpEvType" class="lp-modal-select" onchange="onLPEvTypeChange(this.value)">
+          <option value="edu">🎓 教育費</option>
+          <option value="housing">🏠 住宅（購入・改修）</option>
+          <option value="car">🚗 車購入</option>
+          <option value="travel">✈️ 旅行・レジャー</option>
+          <option value="medical">🏥 医療・介護</option>
+          <option value="retire">👔 退職・収入変化</option>
+          <option value="inherit">💰 相続・贈与</option>
+          <option value="other">📌 その他</option>
+        </select>
+      </div>
+      <div class="lp-modal-row">
+        <div class="lp-modal-label">イベント名</div>
+        <input type="text" id="lpEvName" class="lp-modal-input" placeholder="例：長女 大学入学">
+      </div>
+      <div class="lp-modal-row-2">
+        <div class="lp-modal-row">
+          <div class="lp-modal-label">発生年</div>
+          <input type="number" id="lpEvYear" class="lp-modal-input" min="2026" max="2100" placeholder="2027">
+        </div>
+        <div class="lp-modal-row">
+          <div class="lp-modal-label">金額（万円）</div>
+          <input type="number" id="lpEvAmt" class="lp-modal-input" min="0" placeholder="250">
+        </div>
+      </div>
+      <div class="lp-modal-row">
+        <div class="lp-modal-label">収支への影響</div>
+        <select id="lpEvImpact" class="lp-modal-select">
+          <option value="expense">支出（一時）</option>
+          <option value="income">収入（一時）</option>
+          <option value="income_cut">収入減（退職等）</option>
+        </select>
+      </div>
+      <div class="lp-modal-row">
+        <div class="lp-modal-label">メモ</div>
+        <input type="text" id="lpEvNote" class="lp-modal-input" placeholder="任意">
+      </div>
+    </div>
+    <div class="lp-modal-footer">
+      <button class="lp-modal-cancel" onclick="closeLPEventModal()">キャンセル</button>
+      <button class="lp-modal-submit" onclick="saveLPEvent()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Client Mode Overlay -->
+<div id="coOverlay" class="co-overlay hidden">
+  <!-- Bar -->
+  <div class="co-bar">
+    <div class="co-bar-left">
+      <div class="co-bar-logo"><div class="co-bar-mark">MF</div>FinAdviser</div>
+      <span class="co-bar-tag">クライアントビュー</span>
+      <span class="co-bar-client" id="coBarName">田中 誠一 様</span>
+      <span class="co-bar-meta" id="coBarMeta">52歳・前回面談 1ヶ月前</span>
+    </div>
+    <button class="co-exit-btn" onclick="toggleClientMode()">← IFAビューに戻る</button>
+  </div>
+
+  <!-- KPI strip: 4 cards -->
+  <div class="co-kpi-strip">
+    <div class="co-kpi-cell">
+      <div class="co-kpi-lbl">総資産</div>
+      <div class="co-kpi-v income" id="coTotal">¥1.30億</div>
+      <div class="co-kpi-sub" style="color:#B6B2AF" id="coTotalSub">ME連携 + 申告</div>
+    </div>
+    <div class="co-kpi-cell">
+      <div class="co-kpi-lbl">純資産</div>
+      <div class="co-kpi-v income" id="coNet">¥1.02億</div>
+      <div class="co-kpi-sub" style="color:#B6B2AF" id="coNetSub">純資産率 78%</div>
+    </div>
+    <div class="co-kpi-cell">
+      <div class="co-kpi-lbl">収入（今月）</div>
+      <div class="co-kpi-v income" id="coIncome">¥1,539万</div>
+      <div class="co-kpi-sub income" id="coIncomeSub">前月比 +1.2%</div>
+    </div>
+    <div class="co-kpi-cell">
+      <div class="co-kpi-lbl">支出（今月）</div>
+      <div class="co-kpi-v expense-c" id="coExpense">¥518万</div>
+      <div class="co-kpi-sub expense-c" id="coExpenseSub">収支 +¥1,021万</div>
+    </div>
+  </div>
+
+  <!-- Middle: Goal + Chart -->
+  <div class="co-mid">
+    <!-- 左：目標 vs 現状 -->
+    <div class="co-goal-pane">
+      <div class="co-goal-tag">目標 vs 現状</div>
+      <div class="co-goal-name" id="coGoalName">老後資金 ¥2億（65歳まで・残り13年）</div>
+      <div class="co-pct-row">
+        <div class="co-pct-big income" id="coPct">51</div>
+        <div class="co-pct-sym">%</div>
+      </div>
+      <div class="co-pct-caption">達成率</div>
+      <div class="co-prog-bg"><div class="co-prog-fill" id="coProgFill" style="width:51%"></div></div>
+      <div class="co-gstats">
+        <div class="co-gstat">
+          <div class="co-gstat-lbl">現在の純資産</div>
+          <div class="co-gstat-v income" id="coGstatNet">¥1.0億</div>
+        </div>
+        <div class="co-gstat">
+          <div class="co-gstat-lbl">目標まであと</div>
+          <div class="co-gstat-v" id="coGstatGap">¥9,723万</div>
+        </div>
+        <div class="co-gstat">
+          <div class="co-gstat-lbl">必要月積立（概算）</div>
+          <div class="co-gstat-v" id="coGstatMonthly">¥62万</div>
+        </div>
+      </div>
+    </div>
+    <!-- 右：資産推移 + 収支 -->
+    <div class="co-chart-pane">
+      <div class="co-chart-hdr">
+        <span class="co-chart-title">資産推移（過去6ヶ月）</span>
+        <span class="co-chart-latest income" id="coChartLatest">¥1.30億</span>
+      </div>
+      <svg id="coChartSvg" width="100%" height="120" viewBox="0 0 400 110" preserveAspectRatio="none" style="display:block;overflow:visible"></svg>
+      <div class="co-cf">
+        <div class="co-cf-title">収支バランス（今月）</div>
+        <div class="co-cf-row">
+          <span class="co-cf-label" style="color:#316FEE">収入</span>
+          <div class="co-cf-bar-bg"><div class="co-cf-bar-fill" id="coCfIncBar" style="width:100%;background:#316FEE"><span class="co-cf-bar-txt" id="coCfIncTxt">¥1,539万</span></div></div>
+          <span class="co-cf-amt income" id="coCfInc">¥1,539万</span>
+        </div>
+        <div class="co-cf-row">
+          <span class="co-cf-label" style="color:#D02F3F">支出</span>
+          <div class="co-cf-bar-bg"><div class="co-cf-bar-fill" id="coCfExpBar" style="width:34%;background:#D02F3F"><span class="co-cf-bar-txt" id="coCfExpTxt">¥518万</span></div></div>
+          <span class="co-cf-amt expense-c" id="coCfExp">¥518万</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Asset class strip -->
+  <div class="co-ac-strip">
+    <div class="co-ac-title">資産クラス内訳</div>
+    <div class="co-ac-bar" id="coAcBar"></div>
+    <div class="co-ac-grid" id="coAcGrid"></div>
+  </div>
+
+  <div class="co-footer">
+    <div class="co-footer-brand"><div class="co-bar-mark" style="width:18px;height:18px;font-size:8px;flex-shrink:0">MF</div>FinAdviser</div>
+    <div class="co-footer-note">ME連携および申告情報に基づく　データ更新: <span id="coUpd">2分前</span></div>
+  </div>
+</div>
+
+<!-- Profile Drawer -->
+<div id="profileDrawer" class="drawer-overlay hidden" onclick="closeProfileBg(event)">
+  <div class="drawer">
+    <div class="drawer-hdr">
+      <span class="drawer-title" id="drawerTitle">田中 誠一 様 プロフィール</span>
+      <button class="drawer-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-sec-title">基本情報</div>
+      <div class="drawer-row"><span class="drawer-row-label">生年月日</span><span class="drawer-row-val" id="drBirthday">—</span></div>
+      <div class="drawer-row"><span class="drawer-row-label">年齢</span><span class="drawer-row-val" id="drAge">—</span></div>
+      <div class="drawer-row"><span class="drawer-row-label">居住エリア</span><span class="drawer-row-val" id="drArea">—</span></div>
+      <div class="drawer-row"><span class="drawer-row-label">職業</span><span class="drawer-row-val" id="drOccupation">—</span></div>
+      <div class="drawer-row"><span class="drawer-row-label">勤務先</span><span class="drawer-row-val" id="drEmployer">—</span></div>
+      <div class="drawer-row"><span class="drawer-row-label">収入種別</span><span class="drawer-row-val" id="drIncomeType">—</span></div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-sec-title">家族構成</div>
+      <div id="drFamily"></div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-sec-title">趣味・関心</div>
+      <div class="drawer-row-val" id="drHobbies" style="padding:0 0 4px">—</div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-sec-title">IFAメモ</div>
+      <div class="profile-note" id="drNote">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Goal Edit Modal -->
+<div id="goalEditModal" class="modal-overlay hidden" onclick="closeGoalEditBg(event)">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title">目標を設定・編集</span>
+      <button class="modal-close" onclick="closeGoalEdit()">✕</button>
+    </div>
+    <div class="modal-form" style="padding-top:14px">
+      <div class="form-row">
+        <label class="form-label">目標名称</label>
+        <input class="form-input" id="goalLabelInput" placeholder="例：老後資金、セミリタイア資金"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">目標金額（万円）</label>
+        <input class="form-input" id="goalAmountInput" type="number" min="0" placeholder="例：20000"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">目標達成年齢（歳）</label>
+        <input class="form-input" id="goalAgeInput" type="number" min="0" placeholder="例：65"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeGoalEdit()">キャンセル</button>
+      <button class="modal-submit" onclick="saveGoal()">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Declared Asset Modal -->
+<div id="daModal" class="modal-overlay hidden" onclick="closeDeclaredModalBg(event)">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title" id="daModalTitle">申告資産を追加</span>
+      <button class="modal-close" onclick="closeDeclaredModal()">✕</button>
+    </div>
+    <div style="display:flex;gap:0;padding:12px 22px 0;border-bottom:1px solid #E7E5E4;margin-bottom:0">
+      <button id="daToggleAsset" class="da-type-btn active" onclick="setDaType('asset')">＋ 資産</button>
+      <button id="daToggleLiab" class="da-type-btn" onclick="setDaType('liab')">－ 負債</button>
+    </div>
+    <div class="modal-cats" id="modalCats">
+      <button class="cat-btn active" onclick="selectCat(this,'不動産')">🏠 不動産</button>
+      <button class="cat-btn" onclick="selectCat(this,'年金')">👴 年金</button>
+      <button class="cat-btn" onclick="selectCat(this,'保険')">🛡️ 保険</button>
+      <button class="cat-btn" onclick="selectCat(this,'未上場株')">📊 未上場株</button>
+      <button class="cat-btn" onclick="selectCat(this,'海外資産')">🌍 海外資産</button>
+      <button class="cat-btn" onclick="selectCat(this,'その他')">📦 その他</button>
+    </div>
+    <div class="modal-form">
+      <div class="form-row">
+        <label class="form-label">名称</label>
+        <input class="form-input" id="daLabel" placeholder="例：自宅マンション（渋谷区）"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">金額（万円）</label>
+        <input class="form-input" id="daAmount" type="number" min="0" placeholder="例：4500"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">確かさ</label>
+        <select class="form-select" id="daConfidence">
+          <option value="確定">確定（査定書・証明書あり）</option>
+          <option value="概算" selected>概算（ヒヤリング・自己申告）</option>
+          <option value="推計">推計（将来受取の見込み額）</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">情報の時点</label>
+        <input class="form-input" id="daDate" type="date"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">メモ</label>
+        <input class="form-input" id="daNotes" placeholder="売却予定、受取条件、特記事項など"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeDeclaredModal()">キャンセル</button>
+      <button class="modal-submit" onclick="addDeclaredAsset()">追加する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const catIcon = {不動産:"🏠",年金:"👴",保険:"🛡️",未上場株:"📊",海外資産:"🌍",その他:"📦"};
+
+function acIconHtml(name) {
+  const n = name;
+  if(n.includes('現金')||n.includes('預金')) return {bg:'#4FC3F7',svg:`<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="10" rx="2.5" fill="white" opacity="0.25"/><rect x="2" y="5" width="16" height="10" rx="2.5" stroke="white" stroke-width="1.5"/><line x1="2" y1="8.5" x2="18" y2="8.5" stroke="white" stroke-width="1"/><line x1="2" y1="11.5" x2="18" y2="11.5" stroke="white" stroke-width="1"/><circle cx="10" cy="10" r="2" fill="white" opacity="0.9"/></svg>`};
+  if(n.includes('株式')) return {bg:'#FF7043',svg:`<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15 L7 10 L11 12.5 L17 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3" cy="15" r="1.8" fill="white"/><circle cx="7" cy="10" r="1.8" fill="white"/><circle cx="11" cy="12.5" r="1.8" fill="white"/><circle cx="17" cy="5" r="1.8" fill="white"/><path d="M14.5 3.5H17.5V6.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`};
+  if(n.includes('投資信託')||n.includes('ファンド')) return {bg:'#66BB6A',svg:`<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" fill="white" opacity="0.2"/><path d="M10 3 A7 7 0 0 1 17 10 L10 10 Z" fill="white"/><path d="M10 10 L17 10 A7 7 0 0 1 5.27 15.5 Z" fill="white" opacity="0.6"/><circle cx="10" cy="10" r="2.8" fill="#66BB6A"/></svg>`};
+  if(n.includes('保険')) return {bg:'#AB47BC',svg:`<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2.5L16.5 5.5V10.5C16.5 14.5 13.5 17.5 10 18.5C6.5 17.5 3.5 14.5 3.5 10.5V5.5L10 2.5Z" fill="white" opacity="0.9"/><path d="M7.5 10.5L9.5 12.5L12.5 8.5" stroke="#AB47BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`};
+  if(n.includes('不動産')) return {bg:'#FFA726',svg:`<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L18.5 9.5H15.5V17.5H11.5V13H8.5V17.5H4.5V9.5H1.5L10 2Z" fill="white"/></svg>`};
+  return {bg:'#90A4AE',svg:`<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="white" stroke-width="2"/><circle cx="10" cy="10" r="2" fill="white"/></svg>`};
+}
+
+function renderAcGrid() {
+  const c = window.currentClient; if(!c) return;
+  const el = document.getElementById('acGrid'); if(!el) return;
+  el.innerHTML = c.ac.filter(a=>a.pct>0).map(a=>{
+    const ico = acIconHtml(a.name);
+    return `<div class="ac-item">
+      <div class="ac-icon"><div class="ac-icon-mark" style="background:${ico.bg}">${ico.svg}</div></div>
+      <div class="ac-name">${a.name}</div>
+      <div class="ac-amt">¥${a.amt.toLocaleString()}万</div>
+      <div class="ac-pct" style="color:${ico.bg}">${a.pct}%</div>
+    </div>`;
+  }).join('');
+}
+const liabIcon = {住宅ローン:"🏠",車ローン:"🚗",奨学金:"🎓",カードローン:"💳",事業借入:"🏢",その他:"📋"};
+const liabCats = ['住宅ローン','車ローン','奨学金','カードローン','事業借入','その他'];
+const assetCats = ['不動産','年金','保険','未上場株','海外資産','その他'];
+const liabCatEmoji = {住宅ローン:"🏠",車ローン:"🚗",奨学金:"🎓",カードローン:"💳",事業借入:"🏢",その他:"📋"};
+const confColor = {確定:"src-dec-conf-確定",概算:"src-dec-conf-概算",推計:"src-dec-conf-推計"};
+let selectedDaType = 'asset';
+
+const clients = [
+  {
+    name:"田中 誠一", age:52, rBg:"rgba(49,111,238,.1)", rFg:"#316FEE",
+    total:130765015, mfMeTotal:80765015, liab:28000000, mfMeLiab:28000000, upd:"2分前", status:"要注意", mfUpdated:"2026-03-15",
+    goal:{label:"老後資金", amount:200000000, targetAge:65},
+    meeting:"2026-02-15",
+    changes:[
+      {label:"純資産",value:"+152万円",dir:"up",note:"前回面談比 +1.2%"},
+      {label:"月間支出",value:"+42万円",dir:"warn",note:"前回面談比 増加傾向"},
+      {label:"目標達成率",value:"+0.8%",dir:"up",note:"50.4% → 51.2%"},
+      {label:"積み残しTODO",value:"2件",dir:"neutral",note:"前回面談より"},
+    ],
+    todos:[
+      {id:1,text:"外国株ファンドへのリバランス検討",done:false,due:"2026-04-30"},
+      {id:2,text:"保険の見直し資料を送付",done:false,due:"2026-03-31"},
+      {id:3,text:"確定申告用書類の確認",done:true,due:"2026-03-15"},
+    ],
+    meetingLog:[
+      {id:1,date:"2026-02-15",format:"対面",
+       hearing:"住宅ローン繰上げ返済を2027年目処で実行したいとのこと。長女の大学進学（来春）との資金バランスが課題。株式への集中投資に慣れてきており、リスク許容度が上がっている感触。",
+       advice:"教育費（4年間で計800万試算）と繰上げ返済の両立プランを提案。NISA積立は継続推奨。外国株ファンドへのリバランスについて次回具体案を持参する旨を伝えた。",
+       followup:"繰上げ返済シミュレーション資料を持参。教育費の具体的な概算を依頼。保険見直し資料も送付予定。"},
+      {id:2,date:"2025-11-10",format:"オンライン",
+       hearing:"株式報酬（RSU）の課税タイミングについて確認したいとのこと。今年の確定申告が初めてで不安な様子。",
+       advice:"RSUの売却タイミングと税務処理を解説。確定申告書類の事前チェックを来年2月に実施する提案をした。",
+       followup:"確定申告用書類チェックを2026年2月に設定。税理士紹介の要否を次回確認。"},
+      {id:3,date:"2025-07-22",format:"対面",
+       hearing:"年初から株価が好調で総資産が増加。このまま株式比率を高めるか迷っているとのこと。",
+       advice:"現在の株式比率40%は年齢・リスク許容度から適正範囲内。ただし長女進学資金は3年以内の流動性が必要なため、そこに充てる分は預金か短期国債で確保するよう提案。",
+       followup:"教育資金専用の目標設定を次回実施。"},
+    ],
+    declaredAssets:[
+      {id:101,category:"不動産",label:"自宅マンション（世田谷区）",amount:45000000,confidence:"概算",asOfDate:"2025-10-01",notes:"購入時¥5,800万・現在査定値"},
+      {id:102,category:"年金",label:"厚生年金（65歳受給見込）",amount:5000000,confidence:"推計",asOfDate:"2026-01-01",notes:"月15万×20年換算で概算"},
+    ],
+    historicalAcPct:[50,28,10,8,4],
+    income:15389165, expense:630000,
+    trends:{
+      '6m':{labels:['10月','11月','12月','1月','2月','3月'],data:[12400,12500,12700,12900,12950,13077]},
+      '1y':{labels:['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'],data:[11200,11400,11600,11800,11900,12100,12400,12500,12700,12900,12950,13077]},
+      '3y':{labels:['2023','','','','2024','','','','2025','','','','2026'],data:[9000,9300,9600,9800,10200,10600,11000,11400,11800,12100,12400,12800,13077]},
+      '5y':{labels:['2021','2022','2023','2024','2025','2026/3'],data:[7200,8100,9400,11200,12800,13077]},
+    },
+    ac:[
+      {name:"現金・預金",amt:4570,pct:35,color:"#6B9BD2",icon:"🏦"},
+      {name:"株式",amt:5230,pct:40,color:"#316FEE",icon:"📈"},
+      {name:"投資信託",amt:1960,pct:15,color:"#95C17B",icon:"💹"},
+      {name:"保険",amt:650,pct:5,color:"#F4A261",icon:"🛡️"},
+      {name:"不動産・申告他",amt:667,pct:5,color:"#A8C5E8",icon:"🏠"},
+    ],
+    holdings:[
+      {name:"トヨタ自動車",type:"国内株",amt:1820,gain:"+31%",cat:"株式"},
+      {name:"ソニーグループ",type:"国内株",amt:1200,gain:"+18%",cat:"株式"},
+      {name:"三菱UFJ FG",type:"国内株",amt:980,gain:"+44%",cat:"株式"},
+      {name:"Apple Inc.",type:"米国株",amt:890,gain:"+22%",cat:"株式"},
+      {name:"S&P500 ETF",type:"米国ETF",amt:340,gain:"+15%",cat:"株式"},
+      {name:"eMAXIS Slim 全世界株式",type:"投資信託",amt:1960,gain:"+12%",cat:"投資信託"},
+    ],
+    expCats:{
+      big:[
+        {name:"住まい",pct:44,color:"#5B8DEE",monthly:[44,45,43,42,43,44,37,38,43,44,46,33]},
+        {name:"食費",pct:18,color:"#F4A261",monthly:[16,17,18,15,17,18,21,20,18,18,16,22]},
+        {name:"教育費",pct:16,color:"#7EC8C8",monthly:[16,16,17,22,17,16,17,18,17,16,16,13]},
+        {name:"交通費",pct:10,color:"#95C17B",monthly:[9,8,10,9,12,9,11,9,10,10,9,8]},
+        {name:"その他",pct:12,color:"#D3D1CF",monthly:[15,14,12,12,11,13,14,15,12,12,13,24]},
+      ],
+      mid:[
+        {name:"住宅ローン",pct:38,color:"#5B8DEE",monthly:[36,39,35,34,35,38,34,34,37,38,38,33]},
+        {name:"光熱費",pct:4,color:"#6B9BD2",monthly:[6,5,4,3,3,4,4,4,4,4,4,3]},
+        {name:"管理費",pct:2,color:"#8BB3DC",monthly:[2,2,2,2,2,2,2,2,2,2,2,2]},
+        {name:"食料品",pct:11,color:"#F4A261",monthly:[10,10,11,9,11,11,12,12,11,11,10,12]},
+        {name:"外食",pct:7,color:"#F9C785",monthly:[6,6,7,6,7,7,8,7,7,7,7,9]},
+        {name:"学費・塾",pct:14,color:"#7EC8C8",monthly:[14,14,16,21,15,14,17,18,15,14,14,11]},
+        {name:"書籍・教材",pct:2,color:"#9ED5D5",monthly:[2,2,3,3,2,2,2,2,2,2,2,1]},
+        {name:"電車・バス",pct:7,color:"#95C17B",monthly:[6,6,7,6,9,7,6,6,7,7,6,5]},
+        {name:"タクシー",pct:3,color:"#B3D498",monthly:[3,3,3,3,4,3,3,2,3,3,3,3]},
+        {name:"日用品",pct:5,color:"#80CBC4",monthly:[5,5,5,6,5,5,5,5,5,5,6,6]},
+        {name:"その他",pct:7,color:"#D3D1CF",monthly:[10,8,7,7,7,7,7,8,7,7,8,15]},
+      ]
+    },
+    expMonthly:{
+      '2026':[430000,420000,450000,null,null,null,null,null,null,null,null,null],
+      '2025':[430000,420000,450000,460000,440000,540000,590000,570000,450000,460000,440000,680000],
+      '2024':[410000,400000,430000,440000,420000,520000,570000,550000,430000,440000,420000,660000],
+      '2023':[390000,380000,410000,420000,400000,500000,550000,530000,410000,420000,400000,640000],
+    },
+    incMonthly:{
+      '2026':[510000,510000,510000,null,null,null,null,null,null,null,null,null],
+      '2025':[510000,510000,510000,510000,510000,1410000,510000,510000,510000,510000,510000,1310000],
+      '2024':[490000,490000,490000,490000,490000,1350000,490000,490000,490000,490000,490000,1260000],
+      '2023':[470000,470000,470000,470000,470000,1300000,470000,470000,470000,470000,470000,1210000],
+    },
+    profile:{
+      birthday:"1981-06-30", area:"埼玉県さいたま市",
+      occupation:"会社員（一般職）", employer:"中規模サービス業", income_type:"給与",
+      family:[
+        {relation:"配偶者",name:"鈴木 浩二",age:47,note:"会社員"},
+        {relation:"長男",name:"鈴木 拓也",age:14,note:"中学生"},
+      ],
+      hobbies:"料理・映画鑑賞",
+      note:"住宅ローン借り換えを検討中。ゆうちょ連携エラーの解消が急務。",
+    },
+  },
+  // ─── 佐藤 美咲 ────────────────────────────────────────────
+  {
+    name:"佐藤 美咲", age:38, rBg:"rgba(126,200,200,.12)", rFg:"#7EC8C8",
+    total:18520000, mfMeTotal:18520000, liab:0, mfMeLiab:0, upd:"1時間前", status:"良好", mfUpdated:"2026-03-14",
+    goal:{label:"老後資金", amount:50000000, targetAge:65},
+    meeting:"2026-02-22",
+    changes:[
+      {label:"純資産",value:"+68万円",dir:"up",note:"前回面談比 +5.2%"},
+      {label:"月間収入",value:"+8万円",dir:"up",note:"前年同期比 回復傾向"},
+      {label:"目標達成率",value:"+1.8%",dir:"up",note:"24.7% → 26.5%"},
+      {label:"積み残しTODO",value:"1件",dir:"neutral",note:"前回面談より"},
+    ],
+    todos:[
+      {id:1,text:"NISA積立増額タイミングの検討（月¥1万→¥3万）",done:false,due:"2026-05-31"},
+      {id:2,text:"iDeCo拠出額の見直し確認",done:true,due:"2026-02-28"},
+    ],
+    meetingLog:[
+      {id:1,date:"2026-02-22",format:"オンライン",
+       hearing:"2026年の案件状況が回復傾向。月収が¥38万まで回復し、NISA積立の増額を検討したいが収入安定性への不安が残る。",
+       advice:"収入月¥45万超が3ヶ月継続した時点を増額トリガーとして設定することを提案。iDeCo満額拠出の節税シミュレーションを提示し、前向きな反応を得た。",
+       followup:"収入トレンドをMF MEで毎月確認。5月頃に増額可否を判断する。"},
+      {id:2,date:"2025-10-15",format:"対面",
+       hearing:"案件が落ち込み月収が¥30万前後に。支出の見直しをしたいとのこと。",
+       advice:"固定費（保険・通信費）の見直しで月¥1.5万の削減余地を提示。投資積立は継続し、生活防衛資金¥264万（12ヶ月分）を目標に積み上げることを推奨。",
+       followup:"通信費プランの見直しを依頼。目標額まであと¥80万。"},
+    ],
+    declaredAssets:[
+      {id:201,category:"相続予定",label:"祖母相続（見込・不確定）",amount:3000000,confidence:"不確定",asOfDate:"2026-01-01",notes:"2028年頃・祖母健在。金額未確定。"},
+    ],
+    historicalAcPct:[72,10,14,4],
+    income:4560000, expense:220000,
+    trends:{
+      '6m':{labels:['10月','11月','12月','1月','2月','3月'],data:[1530,1560,1590,1620,1784,1852]},
+      '1y':{labels:['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'],data:[1310,1340,1360,1390,1420,1450,1530,1560,1590,1620,1784,1852]},
+      '3y':{labels:['2023','','','','2024','','','','2025','','','','2026'],data:[870,920,960,990,1050,1120,1200,1290,1380,1490,1640,1750,1852]},
+      '5y':{labels:['2021','2022','2023','2024','2025','2026/3'],data:[440,620,990,1240,1740,1852]},
+    },
+    ac:[
+      {name:"現金・預金",amt:620,pct:33,color:"#6B9BD2",icon:"🏦"},
+      {name:"投資信託",amt:780,pct:42,color:"#95C17B",icon:"💹"},
+      {name:"iDeCo・保険",amt:300,pct:16,color:"#F4A261",icon:"🛡️"},
+      {name:"その他",amt:172,pct:9,color:"#D3D1CF",icon:"📦"},
+    ],
+    holdings:[
+      {name:"eMAXIS Slim 全世界株式",type:"投資信託",amt:480,gain:"+14%",cat:"投資信託"},
+      {name:"ひふみプラス",type:"投資信託",amt:190,gain:"+8%",cat:"投資信託"},
+      {name:"SBI・V・全米株式",type:"投資信託",amt:110,gain:"+11%",cat:"投資信託"},
+      {name:"iDeCo（定期預金型）",type:"確定拠出",amt:180,gain:"+0%",cat:"iDeCo・保険"},
+      {name:"終身保険（解約返戻金）",type:"保険",amt:120,gain:"+3%",cat:"iDeCo・保険"},
+    ],
+    expCats:{
+      big:[
+        {name:"住まい",pct:31,color:"#5B8DEE",monthly:[32,31,30,29,30,31,28,27,30,31,32,24]},
+        {name:"食費",pct:23,color:"#F4A261",monthly:[22,23,22,21,23,23,26,25,23,23,22,27]},
+        {name:"交通・通信",pct:14,color:"#95C17B",monthly:[14,14,15,13,14,14,13,14,14,14,14,12]},
+        {name:"娯楽・交際",pct:12,color:"#7EC8C8",monthly:[10,11,11,10,12,13,16,15,12,11,10,18]},
+        {name:"保険・年金",pct:11,color:"#FFB74D",monthly:[11,11,11,11,11,11,11,11,11,11,11,11]},
+        {name:"その他",pct:9,color:"#D3D1CF",monthly:[11,10,11,16,10,8,6,8,10,10,11,8]},
+      ],
+      mid:[
+        {name:"家賃",pct:28,color:"#5B8DEE",monthly:[28,28,27,26,27,28,25,24,27,28,28,22]},
+        {name:"光熱費",pct:3,color:"#6B9BD2",monthly:[4,4,3,3,3,3,3,3,3,3,4,2]},
+        {name:"食料品",pct:14,color:"#F4A261",monthly:[14,14,13,13,14,14,15,15,14,14,13,15]},
+        {name:"外食・カフェ",pct:9,color:"#F9C785",monthly:[8,9,9,8,9,9,11,10,9,9,9,12]},
+        {name:"電車・バス",pct:8,color:"#95C17B",monthly:[8,8,9,7,8,8,8,8,8,8,8,7]},
+        {name:"スマホ・通信",pct:4,color:"#B3D498",monthly:[4,4,4,4,4,4,4,4,4,4,4,4]},
+        {name:"サブスクリプション",pct:2,color:"#80CBC4",monthly:[2,2,2,2,2,2,2,2,2,2,2,2]},
+        {name:"娯楽・趣味",pct:6,color:"#7EC8C8",monthly:[5,5,5,5,6,7,9,8,6,5,5,9]},
+        {name:"交際費",pct:6,color:"#9ED5D5",monthly:[5,6,6,5,6,6,7,7,6,6,5,9]},
+        {name:"iDeCo掛金",pct:7,color:"#FFB74D",monthly:[7,7,7,7,7,7,7,7,7,7,7,7]},
+        {name:"その他保険",pct:4,color:"#F4A261",monthly:[4,4,4,4,4,4,4,4,4,4,4,4]},
+        {name:"日用品",pct:5,color:"#D3D1CF",monthly:[6,5,6,10,5,4,3,4,6,5,6,3]},
+        {name:"その他",pct:4,color:"#BDBDBD",monthly:[5,4,5,4,5,3,3,4,4,5,5,4]},
+      ]
+    },
+    expMonthly:{
+      '2026':[220000,218000,225000,null,null,null,null,null,null,null,null,null],
+      '2025':[225000,218000,221000,215000,220000,230000,260000,248000,225000,222000,220000,295000],
+      '2024':[210000,205000,215000,208000,215000,222000,250000,238000,215000,212000,210000,280000],
+      '2023':[195000,190000,200000,195000,200000,208000,235000,225000,202000,200000,198000,265000],
+    },
+    incMonthly:{
+      '2026':[380000,390000,400000,null,null,null,null,null,null,null,null,null],
+      '2025':[300000,310000,320000,350000,370000,360000,420000,400000,380000,360000,370000,380000],
+      '2024':[380000,400000,420000,450000,460000,440000,480000,460000,420000,400000,380000,360000],
+      '2023':[320000,330000,350000,370000,380000,360000,400000,380000,350000,340000,330000,310000],
+    },
+    profile:{
+      birthday:"1987-09-15", area:"東京都世田谷区",
+      occupation:"フリーランス（Webデザイナー）", employer:"自営業", income_type:"事業",
+      family:[{relation:"本人",name:"佐藤 美咲",age:38,note:"独身"}],
+      hobbies:"ヨガ・読書・カフェ巡り",
+      note:"収入の安定化が最優先課題。iDeCo・NISAの活用で節税と資産形成の両立を目指す。",
+    },
+  },
+  // ─── 山本 健太 ────────────────────────────────────────────
+  {
+    name:"山本 健太", age:61, rBg:"rgba(149,193,123,.12)", rFg:"#95C17B",
+    total:86400000, mfMeTotal:64800000, liab:0, mfMeLiab:0, upd:"3日前", status:"要注意", mfUpdated:"2026-03-12",
+    goal:{label:"退職後生活資金", amount:150000000, targetAge:65},
+    meeting:"2026-01-20",
+    changes:[
+      {label:"純資産",value:"+210万円",dir:"up",note:"前回面談比 +2.8%"},
+      {label:"株式比率",value:"41%",dir:"warn",note:"定年前リバランス要検討"},
+      {label:"目標達成率",value:"+1.2%",dir:"up",note:"55.6% → 56.8%"},
+      {label:"積み残しTODO",value:"3件",dir:"warn",note:"前回面談より"},
+    ],
+    todos:[
+      {id:1,text:"退職金¥2,200万の運用基本方針書を策定",done:false,due:"2026-06-30"},
+      {id:2,text:"茨城収益物件の査定結果を報告・売却判断",done:false,due:"2026-04-30"},
+      {id:3,text:"遺言・信託に関する資料を共有",done:false,due:"2026-04-01"},
+      {id:4,text:"配当再投資プランの見直し",done:true,due:"2026-01-31"},
+    ],
+    meetingLog:[
+      {id:1,date:"2026-01-20",format:"対面",
+       hearing:"三菱商事・ENEOSの株価上昇で含み益が拡大。配当収入が年間¥180万になり、再投資方針を固めたとのこと。退職金の運用については妻と相談中で方針がまだ定まらない。",
+       advice:"株式比率41%は定年4年前としてやや高い。2026年中に段階的に10%削減し、個人向け国債・定期預金にシフトすることを提案。茨城物件は利回り2.1%と低く、売却を視野に入れるよう促した。",
+       followup:"退職金運用方針書の叩き台を作成して次回持参。茨城物件の正式査定を依頼。"},
+      {id:2,date:"2025-09-08",format:"対面",
+       hearing:"定年退職後の生活設計について具体的に考え始めたとのこと。妻と二人で月¥43万あれば十分と試算。退職後の医療費増加も気になる。",
+       advice:"現在の純資産¥8,400万と退職金¥2,200万で合計¥10,600万見込み。生活費月¥43万ベースで25年間の取崩し試算を提示。余裕があることを確認し、安心してもらえた。",
+       followup:"遺言・信託についての基礎資料を共有予定。"},
+    ],
+    declaredAssets:[
+      {id:301,category:"不動産",label:"茨城県収益物件",amount:12000000,confidence:"査定中",asOfDate:"2025-12-01",notes:"NOI利回り2.1%。売却検討中。"},
+      {id:302,category:"退職金",label:"退職金（見込）",amount:22000000,confidence:"推計",asOfDate:"2026-01-01",notes:"2030年定年時。会社規程ベース試算。"},
+    ],
+    historicalAcPct:[38,33,8,16,5],
+    income:9600000, expense:430000,
+    trends:{
+      '6m':{labels:['10月','11月','12月','1月','2月','3月'],data:[8020,8150,8380,8440,8580,8640]},
+      '1y':{labels:['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'],data:[7400,7520,7680,7750,7820,7900,8020,8150,8380,8440,8580,8640]},
+      '3y':{labels:['2023','','','','2024','','','','2025','','','','2026'],data:[6800,6950,7100,7200,7350,7520,7700,7850,8000,8200,8450,8560,8640]},
+      '5y':{labels:['2021','2022','2023','2024','2025','2026/3'],data:[5600,6100,7200,7820,8560,8640]},
+    },
+    ac:[
+      {name:"株式",amt:3542,pct:41,color:"#316FEE",icon:"📈"},
+      {name:"現金・預金",amt:2200,pct:25,color:"#6B9BD2",icon:"🏦"},
+      {name:"不動産・収益物件",amt:1200,pct:14,color:"#A8C5E8",icon:"🏠"},
+      {name:"保険・年金",amt:600,pct:7,color:"#F4A261",icon:"🛡️"},
+      {name:"その他",amt:1098,pct:13,color:"#D3D1CF",icon:"📦"},
+    ],
+    holdings:[
+      {name:"三菱商事",type:"国内株",amt:1280,gain:"+38%",cat:"株式"},
+      {name:"ENEOS HD",type:"国内株",amt:820,gain:"+42%",cat:"株式"},
+      {name:"日本電信電話",type:"国内株",amt:640,gain:"+12%",cat:"株式"},
+      {name:"東芝",type:"国内株",amt:480,gain:"+6%",cat:"株式"},
+      {name:"S&P500 ETF（配当再投資）",type:"ETF",amt:322,gain:"+19%",cat:"株式"},
+      {name:"個人向け国債（変動10年）",type:"国債",amt:800,gain:"+0%",cat:"その他"},
+      {name:"定期預金（三菱UFJ）",type:"預金",amt:1400,gain:"+0%",cat:"現金・預金"},
+    ],
+    expCats:{
+      big:[
+        {name:"食費",pct:26,color:"#F4A261",monthly:[25,25,26,24,25,26,29,28,26,25,24,29]},
+        {name:"住まい",pct:22,color:"#5B8DEE",monthly:[24,23,21,20,21,22,19,18,21,22,23,17]},
+        {name:"趣味・旅行",pct:16,color:"#7EC8C8",monthly:[12,13,14,15,16,18,22,20,17,14,13,25]},
+        {name:"医療・健康",pct:12,color:"#EF9A9A",monthly:[14,12,11,13,12,11,10,11,12,13,14,10]},
+        {name:"保険・年金",pct:10,color:"#FFB74D",monthly:[10,10,10,10,10,10,10,10,10,10,10,10]},
+        {name:"交通費",pct:8,color:"#95C17B",monthly:[8,8,9,8,10,8,7,8,8,9,8,6]},
+        {name:"その他",pct:6,color:"#D3D1CF",monthly:[7,9,9,10,6,5,3,5,6,7,8,3]},
+      ],
+      mid:[
+        {name:"食料品",pct:15,color:"#F4A261",monthly:[14,15,15,14,15,15,16,16,15,14,14,16]},
+        {name:"外食・会食",pct:11,color:"#F9C785",monthly:[11,10,11,10,10,11,13,12,11,11,10,13]},
+        {name:"管理費・修繕積立",pct:8,color:"#5B8DEE",monthly:[8,8,8,8,8,8,8,8,8,8,8,8]},
+        {name:"光熱費",pct:7,color:"#6B9BD2",monthly:[9,8,7,6,6,7,6,5,6,7,8,5]},
+        {name:"固定資産税（月割）",pct:7,color:"#8BB3DC",monthly:[7,7,7,7,7,7,7,7,7,7,7,7]},
+        {name:"国内旅行",pct:9,color:"#7EC8C8",monthly:[6,6,6,8,9,12,14,13,10,7,6,18]},
+        {name:"趣味（ゴルフ等）",pct:7,color:"#9ED5D5",monthly:[6,7,8,7,7,6,8,7,7,7,7,7]},
+        {name:"病院・薬",pct:8,color:"#EF9A9A",monthly:[10,8,7,9,8,7,6,7,8,9,10,6]},
+        {name:"サプリ・健康用品",pct:4,color:"#FFCDD2",monthly:[4,4,4,4,4,4,4,4,4,4,4,4]},
+        {name:"生命保険",pct:6,color:"#FFB74D",monthly:[6,6,6,6,6,6,6,6,6,6,6,6]},
+        {name:"交通費・高速",pct:5,color:"#95C17B",monthly:[5,5,6,5,6,5,4,5,5,6,5,3]},
+        {name:"電車・新幹線",pct:3,color:"#B3D498",monthly:[3,3,3,3,4,3,3,3,3,3,3,3]},
+        {name:"その他",pct:5,color:"#BDBDBD",monthly:[6,8,8,9,4,4,2,4,5,6,7,2]},
+      ]
+    },
+    expMonthly:{
+      '2026':[420000,415000,430000,null,null,null,null,null,null,null,null,null],
+      '2025':[425000,418000,430000,445000,435000,468000,520000,510000,440000,450000,435000,580000],
+      '2024':[405000,398000,412000,425000,415000,448000,498000,490000,420000,430000,415000,560000],
+      '2023':[385000,378000,392000,405000,395000,428000,478000,470000,400000,410000,395000,540000],
+    },
+    incMonthly:{
+      '2026':[800000,800000,800000,null,null,null,null,null,null,null,null,null],
+      '2025':[800000,800000,800000,800000,800000,2600000,800000,800000,800000,800000,800000,2400000],
+      '2024':[760000,760000,760000,760000,760000,2480000,760000,760000,760000,760000,760000,2280000],
+      '2023':[720000,720000,720000,720000,720000,2360000,720000,720000,720000,720000,720000,2160000],
+    },
+    profile:{
+      birthday:"1964-11-03", area:"東京都文京区",
+      occupation:"会社員（管理職）", employer:"大手製造業", income_type:"給与",
+      family:[
+        {relation:"配偶者",name:"山本 智子",age:58,note:"パート勤務"},
+        {relation:"長男",name:"山本 大輔",age:30,note:"独立・社会人"},
+        {relation:"長女",name:"山本 麻衣",age:27,note:"独立・社会人"},
+      ],
+      hobbies:"ゴルフ・国内旅行・株式投資",
+      note:"定年まで残り4年。退職金運用と相続対策が急務。茨城収益物件の売却タイミングも検討中。",
+    },
+  },
+  // ─── 鈴木 花子 ────────────────────────────────────────────
+  {
+    name:"鈴木 花子", age:42, rBg:"rgba(244,162,97,.12)", rFg:"#F4A261",
+    total:30750000, mfMeTotal:30750000, liab:18500000, mfMeLiab:18500000, upd:"5日前", status:"要注意", mfUpdated:"2026-03-10",
+    goal:{label:"教育費・住宅ローン完済", amount:50000000, targetAge:55},
+    meeting:"2026-02-05",
+    changes:[
+      {label:"純資産",value:"-24万円",dir:"down",note:"前回面談比 -1.9%"},
+      {label:"月間支出",value:"+89万円",dir:"warn",note:"12月冠婚葬祭が主因"},
+      {label:"目標達成率",value:"-0.4%",dir:"down",note:"24.9% → 24.5%"},
+      {label:"積み残しTODO",value:"3件",dir:"warn",note:"前回面談より"},
+    ],
+    todos:[
+      {id:1,text:"ゆうちょ銀行連携エラーを解消（期限3/20）",done:false,due:"2026-03-20"},
+      {id:2,text:"住宅ローン借換え意思決定（変動 vs 固定）",done:false,due:"2026-03-31"},
+      {id:3,text:"学資保険満期¥400万の運用方針を確定",done:false,due:"2026-04-30"},
+      {id:4,text:"緊急資金¥175万の専用口座設定",done:true,due:"2026-01-31"},
+    ],
+    meetingLog:[
+      {id:1,date:"2026-02-05",format:"対面",
+       hearing:"12月に冠婚葬祭が重なり¥89万の臨時支出。1〜2月は正常化。学資保険が4月に満期を迎えるため¥400万の使い道を相談したい。住宅ローンの借換えも気になっている。",
+       advice:"学資保険¥400万の使途として、繰上げ返済¥200万＋NISA増額原資¥200万の分割活用を提案。住宅ローン固定化（1.8%）への借換えで総支払額-¥180万削減の試算を提示。意思決定は次回面談まで検討。",
+       followup:"ローン借換えシミュレーション更新版を持参。ゆうちょ連携エラーの解消サポートを面談中に実施予定。"},
+      {id:2,date:"2025-10-20",format:"オンライン",
+       hearing:"医療費（夫の入院）で投資信託を一部解約。¥50万ほど取り崩した。再積立を再開したい。",
+       advice:"緊急資金の確保を優先するため、¥175万を別口座に設定してから積立再開するよう提案。NISA積立は月¥3万から再開することで合意。",
+       followup:"緊急資金口座の設定状況を確認。積立再開後のポートフォリオ回復シナリオを提示。"},
+    ],
+    declaredAssets:[
+      {id:401,category:"不動産",label:"自宅マンション（川崎市）",amount:38000000,confidence:"概算",asOfDate:"2025-09-01",notes:"購入時¥4,200万・現在査定値"},
+    ],
+    historicalAcPct:[42,8,30,12,8],
+    income:7200000, expense:300000,
+    trends:{
+      '6m':{labels:['10月','11月','12月','1月','2月','3月'],data:[1270,1280,1188,1218,1242,1225]},
+      '1y':{labels:['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'],data:[1090,1110,1130,1150,1170,1200,1270,1280,1188,1218,1242,1225]},
+      '3y':{labels:['2023','','','','2024','','','','2025','','','','2026'],data:[820,870,900,930,970,1020,1060,1100,1150,1200,1260,1240,1225]},
+      '5y':{labels:['2021','2022','2023','2024','2025','2026/3'],data:[520,680,930,1080,1260,1225]},
+    },
+    ac:[
+      {name:"現金・預金",amt:892,pct:29,color:"#6B9BD2",icon:"🏦"},
+      {name:"保険・年金",amt:800,pct:26,color:"#F4A261",icon:"🛡️"},
+      {name:"投資信託",amt:615,pct:20,color:"#95C17B",icon:"💹"},
+      {name:"株式",amt:246,pct:8,color:"#316FEE",icon:"📈"},
+      {name:"その他",amt:522,pct:17,color:"#D3D1CF",icon:"📦"},
+    ],
+    holdings:[
+      {name:"eMAXIS Slim 全世界株式",type:"投資信託",amt:355,gain:"+13%",cat:"投資信託"},
+      {name:"SBI・V・全米株式",type:"投資信託",amt:260,gain:"+9%",cat:"投資信託"},
+      {name:"東京電力HD",type:"国内株",amt:246,gain:"-8%",cat:"株式"},
+      {name:"学資保険（4月満期）",type:"保険",amt:400,gain:"+8%",cat:"保険・年金"},
+      {name:"iDeCo（バランス型）",type:"確定拠出",amt:400,gain:"+5%",cat:"保険・年金"},
+    ],
+    expCats:{
+      big:[
+        {name:"住まい",pct:38,color:"#5B8DEE",monthly:[39,40,37,36,37,38,34,33,37,38,40,29]},
+        {name:"食費",pct:21,color:"#F4A261",monthly:[20,21,20,19,21,21,24,23,21,21,20,25]},
+        {name:"教育費",pct:14,color:"#7EC8C8",monthly:[14,14,15,20,14,13,15,16,14,13,14,11]},
+        {name:"医療・健康",pct:9,color:"#EF9A9A",monthly:[8,9,9,10,9,8,8,9,9,10,9,7]},
+        {name:"交通・通信",pct:8,color:"#95C17B",monthly:[8,8,9,8,8,8,7,8,8,8,8,6]},
+        {name:"その他",pct:10,color:"#D3D1CF",monthly:[11,8,10,7,11,12,12,11,11,10,9,22]},
+      ],
+      mid:[
+        {name:"住宅ローン返済",pct:34,color:"#5B8DEE",monthly:[34,35,33,33,33,34,31,30,33,34,35,27]},
+        {name:"光熱費",pct:4,color:"#6B9BD2",monthly:[5,5,4,3,4,4,3,3,4,4,5,2]},
+        {name:"食料品",pct:13,color:"#F4A261",monthly:[12,13,12,12,13,13,14,14,13,13,12,14]},
+        {name:"外食",pct:8,color:"#F9C785",monthly:[8,8,8,7,8,8,10,9,8,8,8,11]},
+        {name:"学費・習い事",pct:12,color:"#7EC8C8",monthly:[12,12,13,18,12,11,13,14,12,11,12,9]},
+        {name:"書籍・教材",pct:2,color:"#9ED5D5",monthly:[2,2,2,2,2,2,2,2,2,2,2,2]},
+        {name:"病院・通院",pct:6,color:"#EF9A9A",monthly:[5,6,6,7,6,5,5,6,6,7,6,4]},
+        {name:"薬・サプリ",pct:3,color:"#FFCDD2",monthly:[3,3,3,3,3,3,3,3,3,3,3,3]},
+        {name:"電車・バス",pct:5,color:"#95C17B",monthly:[5,5,6,5,5,5,4,5,5,5,5,4]},
+        {name:"スマホ・通信",pct:3,color:"#B3D498",monthly:[3,3,3,3,3,3,3,3,3,3,3,3]},
+        {name:"冠婚葬祭",pct:3,color:"#CE93D8",monthly:[1,1,2,1,2,3,2,2,2,2,1,20]},
+        {name:"日用品・育児",pct:4,color:"#D3D1CF",monthly:[4,4,4,3,5,4,4,4,4,4,4,4]},
+        {name:"その他",pct:3,color:"#BDBDBD",monthly:[6,3,4,3,4,5,6,5,5,4,4,17]},
+      ]
+    },
+    expMonthly:{
+      '2026':[295000,290000,308000,null,null,null,null,null,null,null,null,null],
+      '2025':[298000,292000,302000,310000,300000,328000,368000,355000,310000,315000,305000,680000],
+      '2024':[278000,272000,282000,290000,280000,308000,348000,335000,290000,295000,285000,460000],
+      '2023':[258000,252000,262000,270000,260000,288000,328000,315000,270000,275000,265000,440000],
+    },
+    incMonthly:{
+      '2026':[600000,600000,600000,null,null,null,null,null,null,null,null,null],
+      '2025':[600000,600000,600000,600000,600000,1200000,600000,600000,600000,600000,600000,1100000],
+      '2024':[570000,570000,570000,570000,570000,1140000,570000,570000,570000,570000,570000,1040000],
+      '2023':[540000,540000,540000,540000,540000,1080000,540000,540000,540000,540000,540000,990000],
+    },
+    profile:{
+      birthday:"1983-05-12", area:"神奈川県川崎市",
+      occupation:"会社員（正社員）", employer:"中堅メーカー", income_type:"給与",
+      family:[
+        {relation:"配偶者",name:"鈴木 健司",age:44,note:"会社員（IT系）"},
+        {relation:"長女",name:"鈴木 あかり",age:12,note:"中学生"},
+        {relation:"次男",name:"鈴木 りく",age:8,note:"小学生"},
+      ],
+      hobbies:"料理・ガーデニング・子どもの習い事サポート",
+      note:"住宅ローン借り換えを検討中。ゆうちょ連携エラーの解消が急務。学資保険満期後の資金運用方針を早急に決定。",
+    },
+  }
+];
+
+const dirColor={up:"#316FEE",down:"#D02F3F",warn:"#D02F3F",neutral:"#B6B2AF"};
+const dirBg={up:"rgba(49,111,238,.08)",down:"rgba(208,47,63,.08)",warn:"rgba(208,47,63,.08)",neutral:"rgba(182,178,175,.1)"};
+const dirIcon={up:"↑",down:"↓",warn:"⚠",neutral:"—"};
+
+let currentClient = clients[0];
+let currentTodos = [...clients[0].todos];
+let currentDeclared = clients[0].declaredAssets.map(a=>({...a}));
+let selectedCat = '不動産';
+let currentPeriod = '6m';
+let currentView = 'line';
+let shareboardOn = false;
+let currentExpMonth = '2026-03';
+
+function fmt(n){return '¥'+Math.abs(n).toLocaleString()}
+function fmtM(n){
+  const a=Math.abs(n);
+  if(a>=100000000) return '¥'+(a/100000000).toFixed(1)+'億';
+  if(a>=10000) return '¥'+Math.round(a/10000).toLocaleString()+'万';
+  return '¥'+a.toLocaleString();
+}
+function daysSince(d){
+  const diff=Math.floor((Date.now()-new Date(d).getTime())/86400000);
+  if(diff===0) return '今日';
+  if(diff<7) return diff+'日前';
+  if(diff<30) return Math.floor(diff/7)+'週間前';
+  return Math.floor(diff/30)+'ヶ月前';
+}
+
+function renderSidebar(activeIdx) {
+  const today = new Date('2026-03-15');
+  const el = document.getElementById('clList'); if(!el) return;
+  el.innerHTML = clients.map((c,i) => {
+    const net = c.total - c.liab;
+    const daysDiff = c.mfUpdated
+      ? Math.floor((today - new Date(c.mfUpdated)) / 86400000)
+      : 999;
+    const isUpdated = daysDiff <= 7;
+    const dotHtml = isUpdated
+      ? `<div class="status-dot updated" title="MF ME データ更新 ${daysDiff===0?'今日':daysDiff+'日前'}"></div>`
+      : `<div class="status-dot" style="background:rgba(255,255,255,.15)"></div>`;
+    return `<div class="cl-row${i===activeIdx?' active':''}" onclick="selectClient(${i})">
+      <div class="cl-av" style="background:${i===activeIdx?'#ED7100':'rgba(255,255,255,.08)'}">${c.name[0]}</div>
+      <div style="flex:1;min-width:0"><div class="cl-name">${c.name}</div><div class="cl-net">純資産 ${fmtM(net)}</div></div>
+      <div class="cl-badges">${dotHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectClient(i) {
+  currentClient = clients[i];
+  currentTodos = currentClient.todos.map(t=>({...t}));
+  currentDeclared = currentClient.declaredAssets.map(a=>({...a}));
+  shareboardOn = false; currentPeriod = '6m'; currentExpMonth = '2026-03';
+  renderSidebar(i);
+  window.currentClient = clients[i];
+  const c = currentClient;
+  const decTotal = currentDeclared.reduce((s,a)=>s+a.amount,0);
+  const net = c.total - c.liab;
+  const mfPct = Math.round(c.mfMeTotal/c.total*100);
+  const pct = Math.min(100,Math.round(net/c.goal.amount*100));
+  const remaining = c.goal.targetAge - c.age;
+  const gap = c.goal.amount - net;
+  const monthly = Math.round(gap/(remaining*12));
+  const pending = currentTodos.filter(t=>!t.done).length;
+
+  // Header
+  const titleEl = document.getElementById('cTitle');
+  titleEl.innerHTML = c.name + ' 様 <span style="font-size:12px;color:#B6B2AF;font-weight:400">詳細 ›</span>';
+  titleEl.onclick = openProfile;
+  document.getElementById('cAge').textContent = c.age + '歳';
+  document.getElementById('cMeeting').textContent = '前回面談: '+c.meeting+'（'+daysSince(c.meeting)+'）';
+  const tb = document.getElementById('cTodoBadge');
+  if(pending>0){tb.textContent='TODO '+pending+'件';tb.classList.remove('hidden')}else{tb.classList.add('hidden')}
+  document.getElementById('meetingDate').textContent = c.meeting + ' → 今日';
+
+  // KPI
+  document.getElementById('kTotal').textContent = fmt(c.total);
+  document.getElementById('kBarMf').style.width = mfPct+'%';
+  document.getElementById('kBarDec').style.width = (100-mfPct)+'%';
+  document.getElementById('kMfAmt').textContent = fmtM(c.mfMeTotal);
+  document.getElementById('kDecAmt').textContent = fmtM(decTotal);
+  document.getElementById('kLiab').textContent = fmt(c.liab);
+  const meLiab = c.mfMeLiab||0;
+  const decLiab = c.liab - meLiab;
+  document.getElementById('kLiabMeAmt').textContent = fmtM(meLiab);
+  const decRow = document.getElementById('kLiabDecRow');
+  if(decLiab > 0){
+    document.getElementById('kLiabDecAmt').textContent = fmtM(decLiab);
+    decRow.style.display='';
+  } else {
+    decRow.style.display='none';
+  }
+  const meNet = c.mfMeTotal - meLiab;
+  const decNet = decTotal;
+  const totalNet = meNet + decNet;
+  document.getElementById('kNet').textContent = fmt(net);
+  document.getElementById('kNetMeAmt').textContent = fmtM(meNet);
+  document.getElementById('kNetDecAmt').textContent = fmtM(decNet);
+  const meNetPct = totalNet > 0 ? Math.round(meNet/totalNet*100) : 50;
+  document.getElementById('kNetBarMf').style.width = meNetPct+'%';
+  document.getElementById('kNetBarDec').style.width = (100-meNetPct)+'%';
+  document.getElementById('daCompleteness').textContent = '資産把握率 '+mfPct+'%';
+  // 今月（3月）の収入・支出
+  const _im = c.incMonthly&&c.incMonthly['2026'] ? c.incMonthly['2026'] : [];
+  const _em = c.expMonthly&&c.expMonthly['2026'] ? c.expMonthly['2026'] : [];
+  const _latestInc = _im.filter(v=>v!=null).pop() || null;
+  const _latestExp = _em.filter(v=>v!=null).pop() || null;
+  document.getElementById('kMonthInc').textContent = _latestInc!=null ? fmtM(_latestInc) : '—';
+  document.getElementById('kMonthExp').textContent = _latestExp!=null ? fmtM(_latestExp) : '—';
+  const _bal = (_latestInc!=null&&_latestExp!=null) ? _latestInc-_latestExp : null;
+  const _balEl = document.getElementById('kMonthBal');
+  _balEl.textContent = _bal!=null ? (_bal>=0?'+':'')+fmtM(_bal) : '—';
+  _balEl.style.color = _bal!=null ? (_bal>=0?'#316FEE':'#D02F3F') : '#181716';
+  // Asset class bar + grid
+  const acBarEl = document.getElementById('acBar');
+  if(acBarEl) acBarEl.innerHTML = c.ac.filter(a=>a.pct>0).map((a,i,arr)=>{
+    const r = i===0?'4px 0 0 4px':i===arr.length-1?'0 4px 4px 0':'0';
+    const ico = acIconHtml(a.name);
+    return `<div class="ac-seg" style="width:${a.pct}%;background:${ico.bg};border-radius:${r}"></div>`;
+  }).join('');
+  renderAcGrid();
+
+  // Goal
+  document.getElementById('goalSub').textContent = c.goal.label+'：'+fmtM(c.goal.amount)+'（'+c.goal.targetAge+'歳まで・残り'+remaining+'年）';
+  document.getElementById('goalPct').innerHTML = pct+'<span style="font-size:14px;font-weight:500">%</span>';
+  document.getElementById('goalPct').style.color = pct>=80?'#316FEE':pct>=50?'#ED7100':'#D02F3F';
+  document.getElementById('goalBar').style.width = pct+'%';
+  document.getElementById('goalCurrent').textContent = fmtM(net);
+  document.getElementById('goalGap').textContent = fmtM(gap);
+  document.getElementById('goalMonthly').textContent = fmtM(monthly);
+
+  // Changes
+  const cg = document.getElementById('changesGrid');
+  cg.innerHTML = c.changes.map(ch=>`
+    <div class="change-item" style="background:${dirBg[ch.dir]}">
+      <div class="change-label">${ch.label}</div>
+      <div class="change-value" style="color:${dirColor[ch.dir]}"><span class="change-icon">${dirIcon[ch.dir]}</span>${ch.value}</div>
+      <div class="change-note">${ch.note}</div>
+    </div>`).join('');
+
+  // Shareboard
+  const stw = document.getElementById('shareToggleWrap');
+  c.partner ? stw.classList.remove('hidden') : stw.classList.add('hidden');
+  document.getElementById('togglePill').classList.remove('on');
+  document.getElementById('toggleThumb').classList.remove('on');
+  document.getElementById('shareToggle').classList.remove('active');
+  document.getElementById('shareToggleLabel').textContent = 'MF シェアボード連携（パートナー資産を含める）';
+
+  // Charts & tabs
+  currentCfYear = 2026; currentCfMonth = 2; currentCatLevel = 'big';
+  showIncome = true; showExpense = true; showPrevYear = false;
+  const _si = document.getElementById('cfSerInc');
+  const _se = document.getElementById('cfSerExp');
+  const _sp = document.getElementById('cfSerPrev');
+  if(_si){ _si.classList.add('active-inc');  }
+  if(_se){ _se.classList.add('active-exp');  }
+  if(_sp){ _sp.classList.remove('active-prev'); }
+  renderPortfolio();
+  currentView = 'line';
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  const lineBtn = document.getElementById('viewBtnLine');
+  if(lineBtn) lineBtn.classList.add('active');
+  renderTrend('6m');
+  renderCashflowYear(2026);
+  document.querySelectorAll('.cat-level-btn').forEach((b,j)=>{b.classList.toggle('active',j===0);});
+  document.querySelectorAll('.period-btn').forEach((b,j)=>b.classList.toggle('active',j===0));
+  document.getElementById('holdingsSection').classList.add('hidden');
+  document.getElementById('holdingsToggle').textContent = '▶ 保有銘柄・ファンド詳細を表示';
+
+  currentMeetingLog = (c.meetingLog || []).map(m=>({...m}));
+  document.getElementById('memoForm').classList.add('hidden');
+  document.getElementById('memoRecBtn').classList.remove('active');
+  renderMemoUI();
+  renderTodos();
+  renderDeclaredAssets();
+  document.getElementById('aiPanel').classList.add('hidden');
+}
+
+// ── ポートフォリオ円グラフ ──
+function renderPortfolio() {
+  const c = currentClient;
+  const acs = c.ac.filter(a=>a.pct>0);
+  const svg = document.getElementById('portfolioSvg');
+  const legend = document.getElementById('portfolioLegend');
+  const tt = document.getElementById('pieTooltip');
+  const R=105, ri=65;
+  let angle=-Math.PI/2, paths='';
+  acs.forEach(a=>{
+    const sw=2*Math.PI*(a.pct/100);
+    const x1=R*Math.cos(angle), y1=R*Math.sin(angle);
+    const x2=R*Math.cos(angle+sw), y2=R*Math.sin(angle+sw);
+    const amtStr = a.amt >= 10000 ? (a.amt/10000).toFixed(1).replace(/\.0$/,'')+'億' : a.amt.toLocaleString()+'万';
+    paths+=`<path d="M0,0 L${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${sw>Math.PI?1:0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${a.color}" opacity=".9" style="cursor:pointer;transition:opacity .1s"
+      onmouseover="this.setAttribute('opacity','1');const t=document.getElementById('pieTooltip');t.innerHTML='<strong>${a.name}</strong>　${a.pct}%　¥'+${JSON.stringify(a.amt.toLocaleString())}+'万';t.style.display='block'"
+      onmousemove="const t=document.getElementById('pieTooltip');t.style.left=(event.clientX+14)+'px';t.style.top=(event.clientY-28)+'px'"
+      onmouseout="this.setAttribute('opacity','.9');document.getElementById('pieTooltip').style.display='none'"/>`;
+    angle+=sw;
+  });
+  svg.innerHTML=paths+`<circle r="${ri}" fill="white"/><text y="-5" text-anchor="middle" font-size="9" fill="#B6B2AF">総資産</text><text y="10" text-anchor="middle" font-size="12" font-weight="700" fill="#181716">${fmtM(c.total)}</text>`;
+  // Legend: fixed column widths
+  legend.innerHTML=acs.map(a=>{
+    const amtDisp = a.amt >= 10000 ? (a.amt/10000).toFixed(1).replace(/\.0$/,'')+'億' : a.amt.toLocaleString()+'万';
+    return `<div class="pl-row"><div class="pl-dot" style="background:${a.color}"></div><span class="pl-name">${a.name}</span><span class="pl-pct">${a.pct}%</span><span class="pl-amt">¥${amtDisp}</span></div>`;
+  }).join('');
+  // Holdings grouped by category
+  renderHoldings(c);
+}
+function renderHoldings(c) {
+  const hb = document.getElementById('holdingsBody'); if(!hb) return;
+  const acs = c.ac.filter(a=>a.pct>0);
+  const holdings = c.holdings || [];
+  let rows = '';
+  acs.forEach(ac=>{
+    const catH = holdings.filter(h=>h.cat===ac.name);
+    if(!catH.length) return;
+    const catAmt = ac.amt >= 10000 ? (ac.amt/10000).toFixed(1).replace(/\.0$/,'')+'億' : ac.amt.toLocaleString()+'万';
+    rows += `<tr class="holdings-cat-header"><td colspan="3">${ac.name}</td><td class="cat-total">¥${catAmt}</td></tr>`;
+    catH.forEach(h=>{
+      const amtDisp = h.amt >= 10000 ? (h.amt/10000).toFixed(1).replace(/\.0$/,'')+'億' : h.amt.toLocaleString()+'万';
+      rows += `<tr><td style="font-weight:500;padding-left:20px">${h.name}</td><td><span class="h-type-badge">${h.type}</span></td><td style="text-align:right;font-weight:700">¥${amtDisp}</td><td style="text-align:right" class="${h.gain.startsWith('-')?'h-gain-neg':'h-gain-pos'}">${h.gain}</td></tr>`;
+    });
+  });
+  hb.innerHTML = rows;
+}
+function toggleHoldings(){
+  const sec=document.getElementById('holdingsSection');
+  const btn=document.getElementById('holdingsToggle');
+  const hidden=sec.classList.toggle('hidden');
+  btn.textContent=(hidden?'▶':'▼')+' 保有銘柄・ファンド詳細を'+(hidden?'表示':'非表示');
+}
+
+
+// ── 積み上げ面グラフ（ポートフォリオ構成推移）──
+function getStackedAcData(c, period) {
+  const td = c.trends[period]; if(!td) return null;
+  const acs = c.ac.filter(a => a.pct > 0);
+  const currentPcts = acs.map(a => a.pct);
+  const histPcts = c.historicalAcPct || currentPcts;
+  const periodWeight = {'6m':0.04,'1y':0.12,'3y':0.5,'5y':1.0}[period] || 0.1;
+  const n = td.data.length;
+  const classes = acs.map((ac, j) => {
+    const sPct = histPcts[j];
+    const ePct = currentPcts[j];
+    const values = td.data.map((total, i) => {
+      const t = i / Math.max(1, n - 1);
+      const pct = sPct + (ePct - sPct) * (periodWeight + (1 - periodWeight) * t);
+      return Math.round(total * pct / 100);
+    });
+    return {name: ac.name, color: ac.color, values};
+  });
+  return {labels: td.labels, classes};
+}
+
+function renderStackedArea(period) {
+  const svgEl = document.getElementById('trendSvg'); if(!svgEl) return;
+  const c = currentClient;
+  const d = getStackedAcData(c, period); if(!d) return;
+  const {labels, classes} = d;
+  const n = labels.length;
+  const W = svgEl.getBoundingClientRect().width || 560;
+  const H = 170, pL = 62, pB = 28, pT = 12;
+  svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const totals = labels.map((_,i) => classes.reduce((s,cl) => s+cl.values[i], 0));
+  const maxTotal = Math.max(...totals);
+  const {hi, step} = niceAxis(0, maxTotal);
+  const xs = labels.map((_,i) => pL + i*(W-pL-8)/(n-1));
+  const toY = v => pT + (1 - v / hi) * (H - pT - pB);
+  let s = `<defs><clipPath id="stackClip"><rect x="${pL}" y="${pT}" width="${W-pL-8}" height="${H-pT-pB}"/></clipPath></defs>`;
+  // Stacked areas
+  let prevTops = Array(n).fill(0);
+  classes.forEach(cl => {
+    const newTops = prevTops.map((b,i) => b + cl.values[i]);
+    const top = xs.map((x,i) => `${x.toFixed(1)},${toY(newTops[i]).toFixed(1)}`).join(' L');
+    const bot = [...xs].reverse().map((x,i) => `${x.toFixed(1)},${toY(prevTops[n-1-i]).toFixed(1)}`).join(' L');
+    s += `<path d="M${top} L${bot} Z" fill="${cl.color}" opacity="0.82" clip-path="url(#stackClip)"/>`;
+    // Top border line
+    s += `<polyline points="${xs.map((x,i)=>x.toFixed(1)+','+toY(newTops[i]).toFixed(1)).join(' ')}" fill="none" stroke="white" stroke-width="0.8" opacity="0.5" clip-path="url(#stackClip)"/>`;
+    prevTops = newTops;
+  });
+  // Y-axis grid + labels
+  for(let v=0; v<=hi+step*0.01; v+=step) {
+    const yy = toY(v);
+    if(yy < pT-2 || yy > H-pB+2) continue;
+    s += `<line x1="${pL}" y1="${yy.toFixed(1)}" x2="${W-4}" y2="${yy.toFixed(1)}" stroke="rgba(0,0,0,.06)" stroke-width="1"/>`;
+    s += `<text x="${pL-5}" y="${(yy+4).toFixed(1)}" text-anchor="end" font-size="10" fill="#B6B2AF">${fmtAxis(v,step)}</text>`;
+  }
+  // X labels
+  xs.forEach((x,i) => {
+    if(labels[i]) s += `<text x="${x.toFixed(1)}" y="${H-pB+16}" text-anchor="middle" font-size="9" fill="#B6B2AF">${labels[i]}</text>`;
+  });
+  // Hover overlay
+  const classesJson = JSON.stringify(classes.map(cl=>({name:cl.name,color:cl.color,values:cl.values})));
+  s += `<rect x="${pL}" y="${pT}" width="${W-pL-8}" height="${H-pT-pB}" fill="transparent" style="cursor:crosshair"
+    onmousemove="handleStackHover(event,${classesJson},${JSON.stringify(labels)},${W},${pL},${H},${pT},${pB},${n})"
+    onmouseout="document.getElementById('chartTooltip').style.display='none';var l=document.getElementById('stackHL');if(l)l.setAttribute('opacity','0')"/>`;
+  s += `<line id="stackHL" x1="0" y1="${pT}" x2="0" y2="${H-pB}" stroke="#666" stroke-width="1" stroke-dasharray="3,2" opacity="0"/>`;
+  svgEl.innerHTML = s;
+}
+
+function handleStackHover(evt, classes, labels, W, pL, H, pT, pB, n) {
+  const svgEl = document.getElementById('trendSvg');
+  const rect = svgEl.getBoundingClientRect();
+  const idx = Math.min(n-1, Math.max(0, Math.round((evt.clientX-rect.left-pL)/(W-pL-8)*(n-1))));
+  const x = pL + idx*(W-pL-8)/(n-1);
+  const line = document.getElementById('stackHL');
+  if(line){line.setAttribute('x1',x.toFixed(1));line.setAttribute('x2',x.toFixed(1));line.setAttribute('opacity','0.7');}
+  const total = classes.reduce((s,cl) => s+cl.values[idx], 0);
+  let tip = `<div style="font-size:10px;color:#aaa;margin-bottom:4px">${labels[idx]||''}</div>`;
+  tip += `<div style="font-weight:700;margin-bottom:5px;font-size:12px">合計 ¥${fmtAxis(total,1000)}</div>`;
+  [...classes].reverse().forEach(cl => {
+    const v = cl.values[idx];
+    const p = Math.round(v/total*100);
+    tip += `<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
+      <span style="width:8px;height:8px;border-radius:2px;background:${cl.color};display:inline-block;flex-shrink:0"></span>
+      <span style="color:#ccc;font-size:10px">${cl.name}</span>
+      <span style="margin-left:auto;padding-left:12px;font-size:10px">¥${fmtAxis(v,1000)}<span style="color:#888;margin-left:3px">${p}%</span></span></div>`;
+  });
+  const tt = document.getElementById('chartTooltip');
+  tt.innerHTML = tip;
+  tt.style.display = 'block';
+  tt.style.left = (evt.clientX+14)+'px';
+  tt.style.top = (evt.clientY-70)+'px';
+}
+
+// ── 推移グラフ ──
+function niceAxis(minV, maxV) {
+  const range = maxV - minV || maxV * 0.2 || 1;
+  const rough = range / 4;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  const step = norm < 1.5 ? mag : norm < 3.5 ? 2*mag : norm < 7.5 ? 5*mag : 10*mag;
+  const lo = Math.floor(minV / step) * step;
+  const hi = Math.ceil(maxV / step) * step;
+  return {lo, hi, step};
+}
+function fmtAxis(v, step) {
+  if(Math.abs(v) < 10000 || (step !== undefined && step < 100)) {
+    return Math.round(v).toLocaleString() + '万';
+  }
+  const oku = v / 10000;
+  if(step === undefined || step >= 1000) return oku.toFixed(1).replace(/\.0$/,'') + '億';
+  // step 100~999: 2桁表示で区別
+  return oku.toFixed(2).replace(/0+$/,'').replace(/\.$/,'') + '億';
+}
+function renderTrend(period) {
+  const svgEl = document.getElementById('trendSvg'); if(!svgEl) return;
+  const c = currentClient;
+  const td = c.trends[period]; if(!td) return;
+  const data = td.data, labels = td.labels, n = data.length;
+  const W = svgEl.getBoundingClientRect().width || 560;
+  const H = 170, pL = 62, pB = 28, pT = 12;
+  const {lo, hi, step} = niceAxis(Math.min(...data), Math.max(...data));
+  svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const toY = v => pT + (1-(v-lo)/(hi-lo))*(H-pT-pB);
+  const xs = data.map((_,i) => pL + i*(W-pL-8)/(n-1));
+  const ys = data.map(v => toY(v));
+  const pts = xs.map((x,i) => x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');
+  const area = `M${xs[0].toFixed(1)},${ys[0].toFixed(1)} ` +
+    xs.slice(1).map((x,i)=>`L${x.toFixed(1)},${ys[i+1].toFixed(1)}`).join(' ') +
+    ` L${xs[n-1].toFixed(1)},${(H-pB).toFixed(1)} L${xs[0].toFixed(1)},${(H-pB).toFixed(1)} Z`;
+  let s = `<defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#316FEE" stop-opacity=".15"/><stop offset="100%" stop-color="#316FEE" stop-opacity="0"/></linearGradient></defs>`;
+  // Y axis grid + labels
+  for(let v=lo; v<=hi+step*0.01; v+=step) {
+    const yy = toY(v);
+    if(yy < pT-2 || yy > H-pB+2) continue;
+    s += `<line x1="${pL}" y1="${yy.toFixed(1)}" x2="${W-4}" y2="${yy.toFixed(1)}" stroke="#E7E5E4" stroke-width="1"/>`;
+    s += `<text x="${pL-5}" y="${(yy+4).toFixed(1)}" text-anchor="end" font-size="10" fill="#B6B2AF">${fmtAxis(v, step)}</text>`;
+  }
+  s += `<path d="${area}" fill="url(#tg)"/>`;
+  s += `<polyline points="${pts}" fill="none" stroke="#316FEE" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  // Data points + X labels
+  xs.forEach((x,i) => {
+    s += `<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3.5" fill="#316FEE" stroke="white" stroke-width="1.5"/>`;
+    if(labels[i]) s += `<text x="${x.toFixed(1)}" y="${H-pB+16}" text-anchor="middle" font-size="9" fill="#B6B2AF">${labels[i]}</text>`;
+  });
+  // Hover overlay
+  const tt = document.getElementById('chartTooltip');
+  s += `<rect x="${pL}" y="${pT}" width="${W-pL-8}" height="${H-pT-pB}" fill="transparent" style="cursor:crosshair"
+    onmousemove="handleTrendHover(event,${JSON.stringify(data)},${JSON.stringify(labels)},${W},${pL},${H},${pT},${pB},${n})"
+    onmouseout="document.getElementById('chartTooltip').style.display='none'"/>`;
+  // Vertical hover line placeholder
+  s += `<line id="trendHoverLine" x1="0" y1="${pT}" x2="0" y2="${H-pB}" stroke="#316FEE" stroke-width="1" stroke-dasharray="3,3" opacity="0"/>`;
+  svgEl.innerHTML = s;
+}
+function handleTrendHover(evt, data, labels, W, pL, H, pT, pB, n) {
+  const svgEl = document.getElementById('trendSvg');
+  const rect = svgEl.getBoundingClientRect();
+  const mouseX = evt.clientX - rect.left;
+  const chartW = W - pL - 8;
+  const idx = Math.min(n-1, Math.max(0, Math.round((mouseX - pL) / chartW * (n-1))));
+  const x = pL + idx * chartW / (n-1);
+  const line = document.getElementById('trendHoverLine');
+  if(line){line.setAttribute('x1',x.toFixed(1));line.setAttribute('x2',x.toFixed(1));line.setAttribute('opacity','0.6');}
+  const val = data[idx];
+  const lbl = labels[idx] || '';
+  const valStr = val >= 10000 ? (val/10000).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')+'億円' : val.toLocaleString()+'万円';
+  const tt = document.getElementById('chartTooltip');
+  tt.innerHTML = (lbl?`<span style="color:#aaa">${lbl}</span>　`:'') + `<strong style="font-size:12px">¥${valStr}</strong>`;
+  tt.style.display = 'block';
+  tt.style.left = (evt.clientX + 14) + 'px';
+  tt.style.top = (evt.clientY - 32) + 'px';
+}
+
+function switchView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const p = currentPeriod || '6m';
+  if(view === 'stack') renderStackedArea(p);
+  else renderTrend(p);
+}
+
+function switchPeriod(period,btn){
+  currentPeriod=period;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(currentView==='stack') renderStackedArea(period);
+  else renderTrend(period);
+}
+// Resize: re-render trend chart
+(function(){
+  let _rt; window.addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(()=>{if(currentView==='stack')renderStackedArea(currentPeriod||'6m');else renderTrend(currentPeriod||'6m');},120);});
+})();
+
+// ── AI ブリーフィング生成 (Claude API) ──
+let _apiKey = '';
+
+// ─ ダミーブリーフィングデータ ─
+
+const _dummyBriefings = {
+  '田中 誠一': `### 📊 ポートフォリオ診断
+- 株式比率40%（¥5,230万）は52歳・高収入層として許容範囲内だが、RSU・国内株への集中が高い。トヨタ・ソニー・三菱UFJで株式部分の約76%を占めており、個別株リスクが顕在化している
+- 現金・預金35%（¥4,570万）は生活費換算で約72ヶ月分と過剰水準。インフレ耐性の観点から¥1,500万程度の余剰分を段階的に運用へ振り向けることを推奨
+- 投資信託15%（eMAXIS Slim全世界）は適切。今後の積み上げ余地あり
+- 保険・不動産含む「守り」資産は10%と低め。退職時期（約10年後）を見据えた安定資産への段階的シフトを検討する時期に差し掛かっている
+
+### 🔔 前回面談からの変化・注意点
+- 純資産が前回比+¥210万（+1.6%）と堅調。株式市場上昇が主因
+- 長女の大学進学が**来春に迫っており**、教育費（4年間¥800万試算）の一次支出が2026年4月から発生する。現預金で対応可能だが、繰上げ返済計画と資金バランスの再確認が急務
+- 2025年12月ボーナス入金（¥340万）を確認済み。運用配分の指示が未完了のまま現金滞留している可能性
+- RSU課税タイミングについて前回確認済みだが、2026年確定申告（3月期限）が直前。書類チェックのフォロー状況を確認
+
+### ✅ 面談前確認ポイント
+- 長女の進学費用（入学金・前期授業料）の支払い時期と金額の確定値
+- 住宅ローン繰上げ返済の実行可否（教育費ピーク中の2027年実行は再考余地あり）
+- RSU確定申告書類の準備状況（期限3/15まで残りわずか）
+- 余剰現金（約¥1,500万）の運用方針について意思決定を促す
+- 外国株ファンドへのリバランス提案（前回持ち越し事項）
+
+### 💡 推奨アクション（優先度順）
+- **【最優先】** 教育費¥800万を現預金から確保し、残余¥1,200〜1,500万を外国株ファンドへ段階投資（3〜6ヶ月かけて移行）
+- **【優先】** 住宅ローン繰上げ返済は2028年以降に延期し、教育費ピーク期の流動性を維持することを提案
+- 国内株3銘柄（トヨタ・ソニー・三菱UFJ）の集中リスク軽減のため、S&P500 ETFまたは全世界株式への一部スイッチを提案（目標：個別株比率を株式全体の50%以下に）
+- NISA成長投資枠の残余¥80万（2026年）を外国株ファンドで消化するよう提案`,
+  '佐藤 美咲': `### 📊 ポートフォリオ診断
+- 現金・預金34%（¥620万）は月支出¥22万に対して約28ヶ月分。生活防衛資金目標（6ヶ月=¥132万）は達成済みだが、フリーランスの収入不安定性を考慮すると12ヶ月分（¥264万）まで積み上げることが望ましい
+- 投資信託42%（¥780万）はeMAXIS Slim・ひふみプラスの積立が中心。フリーランス38歳として積極的な資産形成フェーズにあり、この比率は適切
+- 保険16%（¥300万）は終身保険解約返戻金＋iDeCo。解約返戻金の運用効率を確認し、払済保険への切り替えも選択肢
+- 株式0%はリスク許容度・収入不安定性を踏まえると現時点では適切。収入安定化後の投入余地あり
+
+### 🔔 前回面談からの変化・注意点
+- 2026年の収入（1〜3月平均¥38万/月）が前年同期比で回復傾向。前回面談時に懸念した「収入-15%」局面から脱しつつある
+- 純資産+¥68万（+5.2%）と目標達成率26.5%に改善。良好なトレンドを維持
+- 積立NISA拠出を月¥1万に抑制中だが、収入回復を受けて増額のタイミングを検討すべき時期
+- 祖母相続（2028年頃・不確定）の進捗を確認。不確定要素として申告資産に記録済みだが、具体化の兆候があるかを確認
+
+### ✅ 面談前確認ポイント
+- 2026年の案件状況と収入見通し（安定化判断の基準として月¥45万超えを目安に増額検討）
+- iDeCo拠出額の最適化（現在設定額の確認。節税効果が最大化されているか）
+- NISA積立増額のタイミング判断（月¥1万→¥3万への引き上げ条件の合意）
+- 祖母相続の進捗状況（2028年想定を前提とした準備の必要性）
+
+### 💡 推奨アクション（優先度順）
+- **【最優先】** 収入月¥45万超が3ヶ月継続を確認次第、NISA積立を月¥1万→¥3万に増額。年間¥36万の成長投資枠の有効活用を推進
+- **【優先】** iDeCo満額拠出（フリーランスは月¥68,000が上限）を確認。未達の場合、節税効果シミュレーションを提示して増額を促す
+- 生活防衛資金¥264万（12ヶ月分）の確保を優先。目標達成後の余剰現金はeMAXIS Slim全世界株式への一括または分割投資を提案
+- ひふみプラスのパフォーマンス確認（信託報酬1.078%）。eMAXIS Slim国内株（0.143%）への乗り換えコスト比較を実施`,
+  '山本 健太': `### 📊 ポートフォリオ診断
+- 61歳・定年まで4年という時期に株式比率41%（¥3,540万）は**やや積極的**。退職後の生活費を株式リスクに晒すのは危険。前回提案の債券比率0%→30%シフトが急務
+- 現金・預金25%（¥2,200万）は夫婦2人の生活費（月¥43万）の約51ヶ月分。適切水準だが、退職後は月支出増加（医療費等）を想定して36ヶ月分以上を確保する計画が必要
+- 不動産14%（¥1,200万 茨城収益物件）：NOI利回り2.1%と低く、株式との機会費用比較で継続保有の合理性が下がっている。退職時期を見据えた最終判断が必要
+- 保険・他7%（¥590万）：内容の詳細確認が必要。退職後の保険必要性を再評価
+
+### 🔔 前回面談からの変化・注意点
+- 純資産+¥210万（+2.8%）。三菱商事+38%・ENEOSの含み益拡大が主因
+- 配当再投資プランの見直しTODOが**完了済み**。具体的な再投資方針の内容を確認し、議事録に反映
+- 退職金試算¥2,200万の運用方針が**未確定のまま**。定年まで残り4年で、今期中に「退職金運用基本方針書」を策定する必要がある
+- 茨城物件の最終査定結果が未報告。前回面談後の進捗確認が必要
+
+### ✅ 面談前確認ポイント
+- 退職金¥2,200万の具体的な運用方針（株式・債券・預金の配分）を今期中に確定させる
+- 茨城収益物件の査定最終結果と売却/継続保有の意思決定
+- 遺言・信託について「資料共有」TODOが未完了（期限4/1）。事前に資料を送付済みか確認
+- 株式ポートフォリオのリバランス計画（定年前3年で段階的に株式→債券へ）の同意取り付け
+- 配当再投資の見直し内容（何を決定したか）の記録確認
+
+### 💡 推奨アクション（優先度順）
+- **【最優先】** 2026年中に株式比率を41%→30%へ段階的に削減。削減分（約¥950万）を個人向け国債（変動10年）または定期預金に振り替え。定年後の生活費バッファを確保
+- **【優先】** 退職金¥2,200万の運用基本方針を策定。提案：現預金40%・国内外債券30%・株式30%の保守型ポートフォリオ。退職後5年間のキャッシュフロー計画と連動させる
+- 茨城収益物件（NOI利回り2.1%）の売却を提案。売却益を退職金と合わせて運用し、同額を5%期待利回りの分散投資に移行することで年間収益差額+¥34万を試算提示
+- 遺言・信託の専門家（提携司法書士/税理士）紹介を次回面談で実施`,
+  '鈴木 花子': `### 📊 ポートフォリオ診断
+- 保険・年金26%（¥800万）が最大セクター。学資保険（2026年4月満期¥400万）と国民年金換算が主体。満期後の¥400万の再投資方針が未決定
+- 住宅ローン負債¥1,850万（変動金利）が純資産を圧迫。月返済額が支出の約38%を占めており、金利上昇リスクが継続している
+- 投資信託20%（¥610万）はeMAXIS Slim・SBI全米株式。適切な積立を継続できているが、昨年の医療費による一部解約後の回復が遅れている
+- 現金・預金29%（¥890万）のうち緊急資金枠¥175万を除いた¥715万は、ローン繰上げ返済原資または追加投資に活用できる水準
+
+### 🔔 前回面談からの変化・注意点
+- **純資産-¥24万（-1.9%）** と悪化。12月の冠婚葬祭による支出急増（+¥89万）が主因だが、2026年1〜3月は正常化傾向
+- ゆうちょ銀行連携エラーが**未解消のまま**（期限3/20）。資産の全体像が把握できておらず、ブリーフィングの精度に影響あり。面談前に解消状況を確認
+- 住宅ローン変動金利（1.0%）の上昇リスクが継続。固定（1.8%試算）への借換えで総支払額-¥180万の試算は前回提示済みだが、意思決定が保留中
+- 学資保険が**2026年4月に満期**（¥400万確定）。受取後の運用方針を今回面談で確定する必要あり
+
+### ✅ 面談前確認ポイント
+- ゆうちょ連携エラーの解消状況（3/20期限）。未解消の場合は面談中にサポート実施
+- 住宅ローン借換えの意思決定（変動継続 vs 固定1.8%）。金利上昇シナリオのシミュレーション更新版を持参
+- 学資保険満期¥400万（4月）の受取口座と再投資方針の確認
+- 前回解約した投資信託の再積立計画（2026年1月開始予定だったか確認）
+- 夫の収入・資産状況の共有（家計全体の最適化に必要）
+
+### 💡 推奨アクション（優先度順）
+- **【最優先】** 学資保険満期¥400万の使途を決定。提案：①ローン繰上げ返済¥200万（金利1.0%確定リターン）＋②積立NISA増額原資¥200万に分割活用
+- **【優先】** 住宅ローン借換えの最終判断。2025年以降の金利動向を踏まえ、5年以内の借換えで-¥180万削減は依然有利。固定化による家計安定化のメリットを再提示
+- 緊急資金¥175万の別口座確保状況を確認し、未完了の場合は具体的な口座設定手順をサポート
+- 東京電力株（-8%、¥260万含み損）の損切り検討。損失¥20万を確定し、税務上の損益通算（他の含み益と相殺）を提案`,
+};
+
+const _dummyCashflowBriefings = {
+  '田中 誠一': `### 📊 収支サマリー診断
+- 月収入¥51万に対し月支出¥42〜45万で**貯蓄率は約12〜18%**。年収1,538万の高収入層としては低い水準。ボーナス月（6月・12月）に大きく貯蓄が増えるが、それ以外の月は支出が収入に近い状態
+- 住まい（44%・月平均¥18万）が固定費の大半を占め、うち住宅ローン¥16万が安定して計上されている。コントロールが難しいため支出圧縮の余地は食費・その他カテゴリに限られる
+- **8月に支出ピーク¥59万**（夏休み・旅行・外食）。翌月に戻るが繰り返しパターンのため予算化が必要
+- 12月は支出¥68万と突出。年末のまとめ買い・贈答・外食増が原因。収入もボーナス入金で多いが、余剰を運用に回せているか要確認
+
+### 🔔 注目すべき支出トレンド
+- **教育費が4月に急増**（月¥7.2万→¥9.5万）：新学年の入学金・塾費の初回支払いが集中。来年の長女大学進学で入学金・前期授業料¥200〜250万が2026年4月に一時的に発生する見込み
+- 食費・外食の合計が月¥8〜10万で安定しているが、8月・12月は外食比率が上昇（+30〜40%）。家族の外食頻度の確認が面談のきっかけになりやすい
+- 交通費が2024年→2025年比で微増傾向（+8%）。通勤変更や車の維持費増加がないか確認
+
+### 💡 改善アクション（優先度順）
+- **【最優先】** 2026年4月の教育費一時支出（推計¥220万）に向け、現預金から専用口座に積み立てておくよう提案。3〜6月の収支計画を一緒に確認する
+- **【優先】** 月次の貯蓄を自動化。毎月の余剰分（推計¥6〜9万）を給与受取後に自動的に証券口座へ振替する仕組みを提案
+- 8月・12月の支出増加月に備え、前月（7月・11月）に支出抑制を意識するよう提案。年間予算管理の概念を共有する`,
+
+  '佐藤 美咲': `### 📊 収支サマリー診断
+- 月収入が¥30〜42万と**収入変動が大きいフリーランス型家計**。2025年は年間¥370〜420万に回復傾向で、月支出¥21〜22万に対して黒字基調は維持できている
+- 貯蓄率は高収入月（4〜5月、7〜8月）で30%超になる一方、低収入月（1〜3月）では10%以下に低下。年間平均貯蓄率は推計**約18〜22%**
+- 支出の最大カテゴリは住まい（家賃28%・月¥6.2万）で固定費として変動なし。変動費は食費・外食（23%・月¥5万）と娯楽・交際（12%・月¥2.6万）が中心
+- **12月に支出¥29.5万と突出**（年末の交際費・贈答・旅行）。収入は横ばいのため貯蓄が減少しやすい月
+
+### 🔔 注目すべき支出トレンド
+- 外食・カフェ費用が夏（7〜8月）に増加傾向。在宅比率が下がる夏季に外出が増えるパターン
+- iDeCo掛金（月¥1.5万）は毎月安定して拠出できている。満額（月¥6.8万）までの増額余地を継続的に確認
+- 通信・スマホ費が¥0.8万/月と低水準。格安SIM活用済みと思われるが、確認を
+- **4月に日用品費が増加**（新生活シーズンの家具・雑貨購入パターン）。毎年繰り返しであれば予算化を提案
+
+### 💡 改善アクション（優先度順）
+- **【最優先】** 収入が高い月（月¥40万超）に限定して、余剰分の50%をNISA・投信に自動スイープする「収入連動型積立」を提案。安定性とリターンを両立できる
+- **【優先】** 年間の収支を俯瞰し、低収入月（1〜3月）の支出バッファとして¥40〜50万を流動預金に常時保有するよう提案。現在の生活防衛資金目標¥264万と連動させる
+- 娯楽・交際費（年間推計¥31万）について、友人との外食など生活の質に直結する支出は維持しつつ、サブスクリプションの整理（重複サービスの有無）を確認する`,
+
+  '山本 健太': `### 📊 収支サマリー診断
+- 月収入（給与）¥80万に対し月支出¥42〜43万で**貯蓄率は約46〜48%**。年収960万の高収入・高貯蓄型家計。ボーナス月（6月・12月）はさらに貯蓄が拡大
+- 退職4年前として収入は高水準を維持しているが、**退職後は月収入が大幅に減少する見込み**（年金＋投資収益で月推計¥25〜30万）。現在の支出水準¥43万を退職後も維持するには月¥13〜18万の取り崩しが必要
+- 支出のトップは食費（26%・月¥11万）。外食・会食を含む食関連全体で月¥9〜10万と高水準。夫婦2人でゆとりある食生活スタイルが反映されている
+- **趣味・旅行費が季節変動大**（7〜8月ピーク月¥9万、1〜3月閑散期¥5万）。ゴルフ・国内旅行が主な変動要因
+
+### 🔔 注目すべき支出トレンド
+- 医療・健康費（12%・月¥5万）が**年齢とともに増加傾向**。薬代・通院・健康食品など。退職後はさらに増加すると見込まれ、退職後生活費の試算に医療費増加シナリオを加えた見直しが必要
+- 固定資産税（茨城物件含む）が月¥3万相当。物件売却後はこの固定費が消滅し、月3万の支出削減効果が生じる
+- 12月は支出¥58万と突出。年末の外食・贈答・旅行が集中。夫婦での旅行需要は退職後も継続が見込まれる
+
+### 💡 改善アクション（優先度順）
+- **【最優先】** 退職後の月次収支シミュレーションを提示。現在支出¥43万 vs 退職後収入¥25〜30万の「月¥13〜18万ギャップ」を資産取り崩し計画（4%ルール等）と照合し、資産寿命を試算する
+- **【優先】** 茨城物件売却後の収支改善効果（固定資産税・維持費合計で年間推計¥50〜60万削減）を定量的に提示し、売却判断のファイナンス面でのメリットを可視化する
+- 医療費の増加を想定した「ヘルスケア準備金」（退職後10年で¥500〜600万）の積立を、退職金運用方針の一部として組み込む提案を検討`,
+
+  '鈴木 花子': `### 📊 収支サマリー診断
+- 月収入¥60万に対し月支出¥29〜31万で**貯蓄率は約48〜52%**。ただし住宅ローン返済（月¥10万）が支出の34%を占め、実質的な可処分余力は月¥20〜21万
+- **12月支出が¥68万と突出**（冠婚葬祭¥20万超＋年末外食・贈答）。前月比+¥37万の急増で、直後1月から正常化している。年1回のイベントとして予算化されていれば問題ないが、準備できていたか確認を
+- 教育費（14%・月¥4〜5万）は4月に月¥6万超に増加（習い事の年度初め入会金・教材費）。子ども2人分の教育費は今後さらに増加が見込まれ、中学・高校進学に向けた準備が必要
+- 夫婦合算の収入は月¥60万だが、夫の収入データが未連携のため全体像が不明。ゆうちょ連携エラーも含め、家計全体の把握が最優先課題
+
+### 🔔 注目すべき支出トレンド
+- 医療費（病院・通院＋薬）が年間を通じて月¥2.5〜3万。昨年の夫の入院で投資信託を解約した経緯があり、医療費は家計の脆弱点。緊急資金の重要性を再確認
+- 住宅ローン返済が固定費の34%。金利上昇（現在1.0%変動）で月返済額が増加するリスクが継続。固定化（1.8%）に借換えた場合の月次収支への影響も合わせて確認
+- 光熱費が冬（1〜2月）と夏（8月）に増加。特に冬の増加幅が大きく、光熱費高騰対策（太陽光等）の情報提供も有益かもしれない
+
+### 💡 改善アクション（優先度順）
+- **【最優先】** 12月の大型支出（冠婚葬祭・年末）に備えた「年間特別支出積立」を設定。毎月¥2〜3万を積み立て、年末に取り崩す仕組みを提案することで家計の安定性が向上
+- **【優先】** 夫の収入・資産データの取得を優先。ゆうちょ連携エラー（3/20期限）の解消と合わせて、家計全体の収支把握を完成させる。全体像なしでは的確なアドバイスが困難
+- 子ども2人の教育費ロードマップを作成。次女の中学受験・進学（3〜5年後）に向けた教育費の増加試算（月¥5万→¥10万超）と、積立計画のすり合わせを提案`,
+};
+
+function saveApiKey() {
+  const input = document.getElementById('aiKeyInput');
+  if(!input || !input.value.trim()) return;
+  _apiKey = input.value.trim();
+  sessionStorage.setItem('_ak', _apiKey);
+  document.getElementById('aiKeyBar').style.display = 'none';
+  document.getElementById('adviceBody').style.display = '';
+  generateAiAdvice();
+}
+
+function showApiKeyInput() {
+  const keyBar = document.getElementById('aiKeyBar');
+  const body = document.getElementById('adviceBody');
+  if(keyBar) keyBar.style.display = '';
+  if(body) body.innerHTML = '';
+}
+function clearApiKey() {
+  _apiKey = '';
+  sessionStorage.removeItem('_ak');
+  const bar = document.getElementById('aiKeyBar');
+  const body = document.getElementById('adviceBody');
+  if(bar) bar.style.display = '';
+  if(body){ body.style.display = 'none'; body.innerHTML = ''; }
+}
+
+function buildBriefingPrompt(c) {
+  const net = c.total - (c.liab||0);
+  const goalPct = c.goal ? Math.round(net/c.goal.amount*100) : null;
+  const yearToGoal = c.goal ? c.goal.targetAge - c.age : null;
+  const acLines = (c.ac||[]).map(a => `  - ${a.name}: ${a.pct}% (¥${a.amt}万)`).join('\n');
+  const holdLines = (c.holdings||[]).slice(0,6).map(h => `  - ${h.name}（${h.type}）¥${h.amt}万 ${h.gain}`).join('\n');
+  const todoLines = (c.todos||[]).filter(t=>!t.done).map(t => `  - ${t.text}（期限${t.due}）`).join('\n');
+  const lastMeeting = c.meetingLog?.[0];
+  const changeLines = (c.changes||[]).map(ch => `  - ${ch.label}: ${ch.value}（${ch.note}）`).join('\n');
+
+  return `あなたはIFA（独立系ファイナンシャルアドバイザー）の面談前ブリーフィングを作成するAIアシスタントです。
+以下のクライアント情報を分析し、次回面談に向けた実用的なブリーフィングを日本語で作成してください。
+
+## クライアント基本情報
+- 名前: ${c.name}（${c.age}歳）
+- 職業: ${c.profile?.occupation||'不明'}
+- 総資産: ¥${(c.total/10000).toFixed(0)}万 / 負債: ¥${((c.liab||0)/10000).toFixed(0)}万 / 純資産: ¥${(net/10000).toFixed(0)}万
+- 目標: ${c.goal?.label||''}（目標額¥${((c.goal?.amount||0)/10000).toFixed(0)}万・${c.goal?.targetAge||''}歳まで・達成率${goalPct}%・残り${yearToGoal}年）
+- 前回面談: ${c.meeting}
+
+## ポートフォリオ構成
+${acLines}
+
+## 主要保有銘柄
+${holdLines}
+
+## 前回面談からの変化
+${changeLines}
+
+## 直近面談メモ
+- ヒアリング: ${lastMeeting?.hearing||'なし'}
+- アドバイス: ${lastMeeting?.advice||'なし'}
+- 引き継ぎ: ${lastMeeting?.followup||'なし'}
+
+## 未完了TODO
+${todoLines||'  なし'}
+
+## 出力形式（必ずこの形式で出力すること）
+### 📊 ポートフォリオ診断
+### 🔔 前回面談からの変化・注意点
+### ✅ 面談前確認ポイント
+### 💡 推奨アクション（優先度順）
+
+各セクションは箇条書き3〜5項目。数値を積極的に使い、具体的・実用的に記述してください。
+専門的・客観的に記述し、当たり障りのない表現は避けてください。`;
+}
+
+async function generateAiAdvice() {
+  if(!_apiKey) _apiKey = sessionStorage.getItem('_ak') || '';
+
+  const panel = document.getElementById('aiAdvicePanel');
+  const keyBar = document.getElementById('aiKeyBar');
+  const body = document.getElementById('adviceBody');
+  const btn = document.getElementById('aiAdviceBtn');
+  panel.classList.add('show');
+
+  if(!_apiKey) {
+    if(keyBar) keyBar.style.display = '';
+    if(body) body.style.display = '';
+    const dummyMd = _dummyBriefings[currentClient.name];
+    if(dummyMd) {
+      if(btn){ btn.disabled=true; btn.innerHTML='<span class="ai-icon">✦</span>生成中...'; }
+      body.innerHTML = '<div style="padding:8px 0;color:#B6B2AF;font-size:12px">分析中<span class="advice-cursor"></span></div>';
+      await new Promise(r => setTimeout(r, 900));
+      const sections = dummyMd.split(/(?=### )/);
+      body.innerHTML = '';
+      for(const sec of sections) {
+        body.innerHTML = renderAdviceMarkdown(dummyMd.slice(0, dummyMd.indexOf(sec) + sec.length)) + '<span class="advice-cursor"></span>';
+        await new Promise(r => setTimeout(r, 180));
+      }
+      body.innerHTML = renderAdviceMarkdown(dummyMd);
+      body.innerHTML += '<div style="margin-top:10px;padding:8px 12px;background:#FFF9F0;border-radius:6px;font-size:10px;color:#B6B2AF;display:flex;align-items:center;justify-content:space-between"><span>※ デモデータ表示中。実際のAI生成にはAPIキーが必要です</span><button onclick="showApiKeyInput()" style="font-size:10px;color:#316FEE;cursor:pointer;background:none;border:none;font-family:inherit;padding:0">🔑 APIキーを設定</button></div>';
+      if(btn){ btn.disabled=false; btn.innerHTML='<span class="ai-icon">✦</span>面談前AIブリーフィング再生成'; }
+    } else {
+      if(keyBar) keyBar.style.display = '';
+      if(body) body.style.display = 'none';
+    }
+    return;
+  }
+  if(keyBar) keyBar.style.display = 'none';
+  if(body) body.style.display = '';
+  if(btn) { btn.disabled = true; btn.innerHTML = '<span class="ai-icon">✦</span>生成中...'; }
+  body.innerHTML = '<div style="padding:8px 0;color:#B6B2AF;font-size:12px">分析中<span class="advice-cursor"></span></div>';
+
+  const prompt = buildBriefingPrompt(currentClient);
+  let fullText = '';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': _apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1200,
+        stream: true,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+
+    if(!res.ok) {
+      const err = await res.json().catch(()=>({error:{message:'APIエラー'}}));
+      body.innerHTML = `<div style="color:#D02F3F;padding:8px 0;font-size:12px">⚠️ ${err.error?.message||'APIエラーが発生しました'}<br><small>APIキーを確認してください。</small><br><button class="ai-key-clear" onclick="clearApiKey()" style="margin-top:6px;font-size:11px;color:#316FEE;cursor:pointer;background:none;border:none">APIキーを再設定</button></div>`;
+      if(btn){ btn.disabled=false; btn.innerHTML='<span class="ai-icon">✦</span>面談前AIブリーフィング生成'; }
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+
+    while(true) {
+      const {done, value} = await reader.read();
+      if(done) break;
+      buf += dec.decode(value, {stream:true});
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for(const line of lines) {
+        if(!line.startsWith('data: ')) continue;
+        const d = line.slice(6).trim();
+        if(d === '[DONE]') continue;
+        try {
+          const ev = JSON.parse(d);
+          if(ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+            fullText += ev.delta.text;
+            body.innerHTML = renderAdviceMarkdown(fullText) + '<span class="advice-cursor"></span>';
+          }
+        } catch(e){}
+      }
+    }
+    body.innerHTML = renderAdviceMarkdown(fullText);
+    if(btn){ btn.disabled=false; btn.innerHTML='<span class="ai-icon">✦</span>面談前AIブリーフィング再生成'; }
+  } catch(e) {
+    body.innerHTML = `<div style="color:#D02F3F;font-size:12px">⚠️ 通信エラー: ${e.message}</div>`;
+    if(btn){ btn.disabled=false; btn.innerHTML='<span class="ai-icon">✦</span>面談前AIブリーフィング生成'; }
+  }
+}
+
+function saveCfApiKey() {
+  const input = document.getElementById('cfKeyInput');
+  if(!input || !input.value.trim()) return;
+  _apiKey = input.value.trim();
+  sessionStorage.setItem('_ak', _apiKey);
+  document.getElementById('cfKeyBar').style.display = 'none';
+  document.getElementById('cfAdviceBody').style.display = '';
+  generateCfAdvice();
+}
+
+async function generateCfAdvice() {
+  if(!_apiKey) _apiKey = sessionStorage.getItem('_ak') || '';
+  const panel = document.getElementById('cfAdvicePanel');
+  const keyBar = document.getElementById('cfKeyBar');
+  const body = document.getElementById('cfAdviceBody');
+  const btn = document.getElementById('cfAdviceBtn');
+  panel.classList.add('show');
+
+  if(!_apiKey) {
+    if(keyBar) keyBar.style.display = '';
+    if(body) body.style.display = '';
+    const dummyMd = _dummyCashflowBriefings[currentClient.name];
+    if(dummyMd) {
+      if(btn){ btn.disabled=true; btn.innerHTML='<span class="ai-icon">✦</span>生成中...'; }
+      body.innerHTML = '<div style="padding:8px 0;color:#B6B2AF;font-size:12px">分析中<span class="advice-cursor"></span></div>';
+      await new Promise(r => setTimeout(r, 900));
+      const sections = dummyMd.split(/(?=### )/);
+      body.innerHTML = '';
+      for(const sec of sections) {
+        body.innerHTML = renderAdviceMarkdown(dummyMd.slice(0, dummyMd.indexOf(sec) + sec.length)) + '<span class="advice-cursor"></span>';
+        await new Promise(r => setTimeout(r, 180));
+      }
+      body.innerHTML = renderAdviceMarkdown(dummyMd);
+      body.innerHTML += '<div style="margin-top:10px;padding:8px 12px;background:#FFF9F0;border-radius:6px;font-size:10px;color:#B6B2AF;display:flex;align-items:center;justify-content:space-between"><span>※ デモデータ表示中。実際のAI生成にはAPIキーが必要です</span><button onclick="showCfApiKeyInput()" style="font-size:10px;color:#316FEE;cursor:pointer;background:none;border:none;font-family:inherit;padding:0">🔑 APIキーを設定</button></div>';
+      if(btn){ btn.disabled=false; btn.innerHTML='<span class="ai-icon">✦</span>家計AIアドバイス再生成'; }
+    } else {
+      if(keyBar) keyBar.style.display = '';
+      if(body) body.style.display = 'none';
+    }
+    return;
+  }
+
+  if(keyBar) keyBar.style.display = 'none';
+  if(body) body.style.display = '';
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="ai-icon">✦</span>生成中...'; }
+  body.innerHTML = '<div style="padding:8px 0;color:#B6B2AF;font-size:12px">分析中<span class="advice-cursor"></span></div>';
+
+  const c = currentClient;
+  const monthIdx = parseInt((currentExpMonth||'2026-03').split('-')[1]) - 1;
+  const cfPrompt = `あなたはIFA（独立系ファイナンシャルアドバイザー）向けの家計分析AIです。以下のクライアント情報をもとに、収支・支出カテゴリの分析と改善提案を日本語で生成してください。
+
+## クライアント基本情報
+- 名前: ${c.name}（${c.age}歳・${c.profile?.occupation||''}）
+- 月収入（直近）: ¥${(c.income/12).toFixed(0)}万円
+- 月支出（直近）: ¥${(c.expense/10000).toFixed(0)}万円
+- 目標: ${c.goal?.label||''}（目標額¥${(c.goal?.amount/10000).toFixed(0)}万）
+
+## 支出カテゴリ（大分類）
+${c.expCats?.big ? c.expCats.big.map(cat => `- ${cat.name}: ${cat.monthly ? cat.monthly[monthIdx] : cat.pct}%`).join('\n') : ''}
+
+### 出力形式（必ずこの形式で）
+### 📊 収支サマリー診断
+### 🔔 注目すべき支出トレンド
+### 💡 改善アクション（優先度順）
+各セクション3〜4箇条書き。簡潔・実用的に。`;
+
+  let fullText = '';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': _apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        stream: true,
+        messages: [{role:'user', content: cfPrompt}]
+      })
+    });
+
+    if(!res.ok) {
+      const err = await res.json().catch(()=>({error:{message:'APIエラー'}}));
+      body.innerHTML = `<div style="color:#D02F3F;padding:8px 0;font-size:12px">⚠️ ${err.error?.message||'APIエラーが発生しました'}<br><button onclick="showCfApiKeyInput()" style="margin-top:6px;font-size:11px;color:#316FEE;cursor:pointer;background:none;border:none">APIキーを再設定</button></div>`;
+      if(btn){ btn.disabled=false; btn.innerHTML='<span class="ai-icon">✦</span>家計AIアドバイス生成'; }
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    while(true) {
+      const {done, value} = await reader.read();
+      if(done) break;
+      buf += dec.decode(value, {stream:true});
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for(const line of lines) {
+        if(!line.startsWith('data: ')) continue;
+        const d = line.slice(6).trim();
+        if(d === '[DONE]') continue;
+        try {
+          const ev = JSON.parse(d);
+          if(ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+            fullText += ev.delta.text;
+            body.innerHTML = renderAdviceMarkdown(fullText) + '<span class="advice-cursor"></span>';
+          }
+        } catch(e){}
+      }
+    }
+    body.innerHTML = renderAdviceMarkdown(fullText);
+    if(btn){ btn.disabled=false; btn.innerHTML='<span class="ai-icon">✦</span>家計AIアドバイス再生成'; }
+  } catch(e) {
+    body.innerHTML = `<div style="color:#D02F3F;font-size:12px">⚠️ 通信エラー: ${e.message}</div>`;
+    if(btn){ btn.disabled=false; btn.innerHTML='<span class="ai-icon">✦</span>家計AIアドバイス生成'; }
+  }
+}
+
+function showCfApiKeyInput() {
+  const keyBar = document.getElementById('cfKeyBar');
+  const body = document.getElementById('cfAdviceBody');
+  if(keyBar) keyBar.style.display = '';
+  if(body) body.innerHTML = '';
+}
+function renderAdviceMarkdown(md) {
+  const sections = md.split(/(?=###\s)/);
+  let out = '';
+  sections.forEach(sec => {
+    const nl = sec.indexOf('\n');
+    if(nl === -1 || !sec.startsWith('###')) { if(sec.trim()) out += `<div class="advice-section-body">${sec.trim()}</div>`; return; }
+    const title = sec.slice(0, nl).replace(/^###\s+/, '').trim();
+    const body = sec.slice(nl+1).trim();
+    const lines = body.split('\n').filter(l => l.trim());
+    let bodyHtml = '<ul>';
+    lines.forEach(line => {
+      const cleaned = line.replace(/^[-*•]\s*/, '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      if(cleaned.trim()) bodyHtml += `<li>${cleaned}</li>`;
+    });
+    bodyHtml += '</ul>';
+    out += `<div class="advice-section"><div class="advice-section-title">${title}</div><div class="advice-section-body">${bodyHtml}</div></div>`;
+  });
+  return out;
+}
+
+// ── 支出カテゴリ ──
+// ── 収支タブ（縦棒グラフ + カテゴリ統合） ──
+let currentCfYear = 2026;
+let currentCfMonth = 2; // 0-based index (2 = March)
+let currentCatLevel = 'big';
+let showIncome = true, showExpense = true, showPrevYear = false;
+const MONTHS_JP = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const MIN_YEAR = 2023;
+const MAX_YEAR = 2026;
+
+function renderCashflowYear(year) {
+  currentCfYear = year;
+  const c = currentClient;
+  const em = c.expMonthly;
+  if(!em) return;
+
+  const curExpData  = em[String(year)]   || Array(12).fill(null);
+  const prevExpData = em[String(year-1)] || Array(12).fill(null);
+  const im = c.incMonthly || {};
+  const curIncData  = im[String(year)]   || Array(12).fill(null);
+  const prevIncData = im[String(year-1)] || Array(12).fill(null);
+  const flatMonthlyInc = Math.round(c.income / 12); // フォールバック用
+
+  // 選択月が当年にデータなければ最新のデータ月へ
+  if(curExpData[currentCfMonth] === null) {
+    const last = curExpData.reduce((l,v,i)=>v!==null?i:l, -1);
+    if(last >= 0) currentCfMonth = last;
+  }
+
+  // 月ナビラベル & disabled
+  document.getElementById('cfYearLabel').textContent = year + '年' + MONTHS_JP[currentCfMonth];
+  const atMin = year === MIN_YEAR && currentCfMonth === 0;
+  const atMax = year === MAX_YEAR && currentCfMonth === 2;
+  document.getElementById('cfNavPrev').disabled = atMin;
+  document.getElementById('cfNavNext').disabled = atMax;
+
+  // KPI（選択月）
+  const selExp = curExpData[currentCfMonth];
+  const selInc = curIncData[currentCfMonth] !== null ? curIncData[currentCfMonth] : flatMonthlyInc;
+  if(selExp !== null) {
+    const bal = selInc - selExp;
+    const balCol = bal >= 0 ? '#316FEE' : '#D02F3F';
+    document.getElementById('cfIncome').textContent = fmtM(selInc);
+    document.getElementById('cfExpense').textContent = fmtM(selExp);
+    const balEl = document.getElementById('cfBalance');
+    balEl.textContent = (bal >= 0 ? '+' : '') + fmtM(bal);
+    balEl.style.color = balCol;
+  } else {
+    ['cfIncome','cfExpense','cfBalance'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+      document.getElementById(id).style.color = '';
+    });
+  }
+
+  // スケール計算（全データ込み）
+  const H = 120;
+  const allVals = [...curExpData, ...prevExpData, ...curIncData, ...prevIncData, flatMonthlyInc]
+    .filter(v => v !== null);
+  const maxVal = Math.max(...allVals, 1);
+
+  // 縦棒グラフ
+  let barsHTML = '', xlblHTML = '';
+  for(let m = 0; m < 12; m++) {
+    const expV = curExpData[m];
+    const incV = curIncData[m] !== null ? curIncData[m] : (expV !== null ? flatMonthlyInc : null);
+    const isSel = m === currentCfMonth;
+    const hasData = expV !== null;
+    const incH = hasData ? Math.round(incV / maxVal * H) : 0;
+    const expH = hasData ? Math.round(expV / maxVal * H) : 8;
+
+    barsHTML += `<div class="cf-vgrp${isSel?' cf-vsel':''}" onclick="selectCfMonth(${m})" style="height:${H}px">
+      ${hasData
+        ? `${showIncome ? `<div class="cf-vbar cf-vbar-cur-inc" style="height:${incH}px"></div>` : ''}
+           ${showExpense ? `<div class="cf-vbar cf-vbar-cur-exp" style="height:${expH}px"></div>` : ''}
+           ${(!showIncome && !showExpense) ? `<div class="cf-vbar cf-vbar-empty" style="height:6px"></div>` : ''}`
+        : `<div class="cf-vbar cf-vbar-empty" style="height:6px"></div>`}
+    </div>`;
+    xlblHTML += `<div class="cf-xlbl-item${isSel?' cf-vsel':''}" onclick="selectCfMonth(${m})">${m+1}月</div>`;
+  }
+  document.getElementById('cfVChart').innerHTML = barsHTML;
+  document.getElementById('cfXLabels').innerHTML = xlblHTML;
+
+  // 前年折れ線オーバーレイ（収入=青破線 / 支出=赤破線）
+  requestAnimationFrame(() => {
+    const chartEl = document.getElementById('cfVChart');
+    const svg = document.getElementById('cfLineOverlay');
+    if(!chartEl || !svg) return;
+    if(!showPrevYear) { svg.innerHTML = ''; return; }
+    const W = chartEl.getBoundingClientRect().width;
+    const VH = 130;
+    svg.setAttribute('viewBox', `0 0 ${W.toFixed(0)} ${VH}`);
+    svg.removeAttribute('preserveAspectRatio');
+
+    const groupW = (W - 4 - 33) / 12;
+    const cx = m => (2 + m * (groupW + 3) + groupW / 2);
+    const cy = v => VH - Math.round(v / maxVal * H);
+
+    function buildLine(data, stroke) {
+      const segments = [];
+      let seg = [];
+      data.forEach((v, m) => {
+        if(v !== null) { seg.push(`${cx(m).toFixed(1)},${cy(v)}`); }
+        else if(seg.length) { segments.push(seg); seg = []; }
+      });
+      if(seg.length) segments.push(seg);
+      if(!segments.length) return '';
+      const lines = segments.map(s =>
+        `<polyline points="${s.join(' ')}" fill="none" stroke="${stroke}" stroke-width="1.8" stroke-dasharray="5,3" stroke-linejoin="round"/>`
+      ).join('');
+      const dots = data.map((v, m) => v !== null
+        ? `<circle cx="${cx(m).toFixed(1)}" cy="${cy(v)}" r="3" fill="white" stroke="${stroke}" stroke-width="1.8"/>`
+        : ''
+      ).join('');
+      return lines + dots;
+    }
+
+    let svgContent = '';
+    if(showIncome) svgContent += buildLine(prevIncData, '#316FEE');
+    if(showExpense) svgContent += buildLine(prevExpData, '#E07B7B');
+    svg.innerHTML = svgContent;
+  });
+
+  // カテゴリ詳細
+  renderCatDetail(currentCfMonth, currentCatLevel);
+}
+
+function selectCfMonth(m) {
+  const cur = currentClient.expMonthly[String(currentCfYear)];
+  if(!cur || cur[m] === null) return; // no data for this month
+  currentCfMonth = m;
+  renderCashflowYear(currentCfYear);
+}
+
+function toggleCfSeries(series) {
+  if(series === 'income')   showIncome  = !showIncome;
+  else if(series === 'expense')  showExpense = !showExpense;
+  else if(series === 'prevyear') showPrevYear = !showPrevYear;
+  const incBtn  = document.getElementById('cfSerInc');
+  const expBtn  = document.getElementById('cfSerExp');
+  const prevBtn = document.getElementById('cfSerPrev');
+  if(incBtn)  incBtn.classList.toggle('active-inc',  showIncome);
+  if(expBtn)  expBtn.classList.toggle('active-exp',  showExpense);
+  if(prevBtn) prevBtn.classList.toggle('active-prev', showPrevYear);
+  renderCashflowYear(currentCfYear);
+}
+
+function renderCatDetail(monthIdx, level) {
+  const c = currentClient;
+  const cur = c.expMonthly[String(currentCfYear)];
+  const total = cur ? cur[monthIdx] : null;
+  const cats = c.expCats ? c.expCats[level] : null;
+  const monthLabel = currentCfYear + '年' + MONTHS_JP[monthIdx];
+
+  document.getElementById('cfCatSelMonth').textContent = monthLabel + ' の支出内訳';
+
+  if(!cats || total === null) {
+    document.getElementById('expPieSvg').innerHTML = '<text y="0" text-anchor="middle" font-size="10" fill="#B6B2AF">データなし</text>';
+    document.getElementById('expCatList').innerHTML = '<div style="font-size:11px;color:#B6B2AF;padding:8px 0">このデータは取得できません</div>';
+    return;
+  }
+
+  const R = 88, ri = 56;
+  let angle = -Math.PI / 2, paths = '';
+  cats.forEach(cat => {
+    const catPct = cat.monthly ? cat.monthly[monthIdx] : cat.pct;
+    const sw = 2 * Math.PI * (catPct / 100);
+    const x1 = R * Math.cos(angle), y1 = R * Math.sin(angle);
+    const x2 = R * Math.cos(angle + sw), y2 = R * Math.sin(angle + sw);
+    paths += `<path d="M0,0 L${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${sw > Math.PI ? 1 : 0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${cat.color}"/>`;
+    angle += sw;
+  });
+  document.getElementById('expPieSvg').innerHTML = paths + `<circle r="${ri}" fill="white"/><text y="-4" text-anchor="middle" font-size="8" fill="#5D5956">支出合計</text><text y="10" text-anchor="middle" font-size="11" font-weight="700" fill="#181716">${fmtM(total)}</text>`;
+  document.getElementById('expCatList').innerHTML = cats.map(cat => {
+    const catPct = cat.monthly ? cat.monthly[monthIdx] : cat.pct;
+    const amt = Math.round(total * catPct / 100);
+    return `<div class="cat-row"><div class="cat-name-grp"><div class="cat-dot" style="background:${cat.color}"></div><span class="cat-name-txt">${cat.name}</span></div><div class="cat-right"><span class="cat-pct">${catPct}%</span><span class="cat-amt">${fmtM(amt)}</span></div></div>`;
+  }).join('');
+}
+
+function switchCatLevel(level, btn) {
+  currentCatLevel = level;
+  document.querySelectorAll('.cat-level-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCatDetail(currentCfMonth, level);
+}
+
+function navCfMonth(dir) {
+  // dir = -1: 過去へ（左）  dir = +1: 未来へ（右）
+  let y = currentCfYear, m = currentCfMonth + dir;
+  if(m < 0)  { m = 11; y--; }
+  if(m > 11) { m = 0;  y++; }
+  if(y < MIN_YEAR || (y === MIN_YEAR && m < 0)) return;
+  if(y > MAX_YEAR || (y === MAX_YEAR && m > 2)) return; // 2026-03 is latest
+  const data = currentClient.expMonthly[String(y)];
+  if(!data || data[m] === null) return; // skip empty months
+  currentCfMonth = m;
+  renderCashflowYear(y);
+}
+
+// 旧 renderExpCategory / switchExpMonth / renderCashflow の互換エイリアス
+function renderExpCategory(){ renderCashflowYear(2026); }
+function switchExpMonth(){}
+function renderCashflow(){ renderCashflowYear(2026); }
+
+// ── プロフィールドロワー ──
+function openProfile(){
+  const c=currentClient, p=c.profile;
+  document.getElementById('drawerTitle').textContent=c.name+' 様 プロフィール';
+  document.getElementById('drBirthday').textContent=p.birthday;
+  document.getElementById('drAge').textContent=c.age+'歳';
+  document.getElementById('drArea').textContent=p.area;
+  document.getElementById('drOccupation').textContent=p.occupation;
+  document.getElementById('drEmployer').textContent=p.employer;
+  document.getElementById('drIncomeType').textContent=p.income_type;
+  document.getElementById('drFamily').innerHTML=p.family.map(f=>`<div class="family-card"><div class="family-rel">${f.relation}</div><div class="family-name">${f.name}（${f.age}歳）</div>${f.note?`<div class="family-note">${f.note}</div>`:''}</div>`).join('');
+  document.getElementById('drHobbies').textContent=p.hobbies;
+  document.getElementById('drNote').textContent=p.note;
+  document.getElementById('profileDrawer').classList.remove('hidden');
+}
+function closeProfile(){ document.getElementById('profileDrawer').classList.add('hidden'); }
+function closeProfileBg(e){ if(e.target===document.getElementById('profileDrawer')) closeProfile(); }
+
+// ── 目標編集 ──
+function openGoalEdit(){
+  const g=currentClient.goal;
+  document.getElementById('goalLabelInput').value=g.label;
+  document.getElementById('goalAmountInput').value=Math.round(g.amount/10000);
+  document.getElementById('goalAgeInput').value=g.targetAge;
+  document.getElementById('goalEditModal').classList.remove('hidden');
+}
+function closeGoalEdit(){ document.getElementById('goalEditModal').classList.add('hidden'); }
+function closeGoalEditBg(e){ if(e.target===document.getElementById('goalEditModal')) closeGoalEdit(); }
+function saveGoal(){
+  const label=document.getElementById('goalLabelInput').value.trim();
+  const amount=parseInt(document.getElementById('goalAmountInput').value)*10000;
+  const targetAge=parseInt(document.getElementById('goalAgeInput').value);
+  if(!label||!amount||!targetAge){alert('すべて入力してください');return;}
+  currentClient.goal={label,amount,targetAge};
+  const net=currentClient.total-currentClient.liab;
+  const pct=Math.min(100,Math.round(net/amount*100));
+  const remaining=targetAge-currentClient.age, gap=amount-net, monthly=Math.round(gap/(remaining*12));
+  document.getElementById('goalSub').textContent=label+'：'+fmtM(amount)+'（'+targetAge+'歳まで・残り'+remaining+'年）';
+  document.getElementById('goalPct').innerHTML=pct+'<span style="font-size:14px;font-weight:500">%</span>';
+  document.getElementById('goalPct').style.color=pct>=80?'#316FEE':pct>=50?'#ED7100':'#D02F3F';
+  document.getElementById('goalBar').style.width=pct+'%';
+  document.getElementById('goalCurrent').textContent=fmtM(net);
+  document.getElementById('goalGap').textContent=fmtM(gap);
+  document.getElementById('goalMonthly').textContent=fmtM(monthly);
+  closeGoalEdit();
+}
+
+// ── シェアボード ──
+function toggleShareboard(){
+  shareboardOn=!shareboardOn;
+  const c=currentClient, partner=c.partner;
+  document.getElementById('togglePill').classList.toggle('on',shareboardOn);
+  document.getElementById('toggleThumb').classList.toggle('on',shareboardOn);
+  document.getElementById('shareToggle').classList.toggle('active',shareboardOn);
+  const decTotal=currentDeclared.reduce((s,a)=>s+a.amount,0);
+  const baseTotal=shareboardOn?c.total+partner.total:c.total;
+  const baseNet=shareboardOn?(c.total-c.liab+partner.total):(c.total-c.liab);
+  document.getElementById('kTotal').textContent=fmt(baseTotal);
+  document.getElementById('kNet').textContent=fmt(baseNet);
+  document.getElementById('shareToggleLabel').textContent=shareboardOn
+    ?`世帯合算表示中（${partner.name}さんの資産 ${fmtM(partner.total)} を含む）`
+    :'MF シェアボード連携（パートナー資産を含める）';
+}
+
+function renderDeclaredAssets() {
+  const list = document.getElementById('daList');
+  const empty = document.getElementById('daEmpty');
+  const assets = currentDeclared.filter(a=>!a.isLiability);
+  const liabs  = currentDeclared.filter(a=>a.isLiability);
+  if(assets.length === 0 && liabs.length === 0){
+    list.innerHTML = ''; empty.classList.remove('hidden'); return;
+  }
+  empty.classList.add('hidden');
+  const renderItem = a => {
+    const icon = a.isLiability ? (liabCatEmoji[a.category]||'📋') : (catIcon[a.category]||'📦');
+    return `<div class="da-item">
+      <div class="da-cat-icon">${icon}</div>
+      <div class="da-info">
+        <div class="da-item-label">${a.label}</div>
+        <div class="da-item-meta">
+          <span class="src-badge ${confColor[a.confidence]||'src-dec'}">${a.confidence}</span>
+          <span style="font-size:10px;color:#B6B2AF">${a.asOfDate} 時点</span>
+          <span class="src-badge src-dec" style="font-weight:400">${a.category}</span>
+        </div>
+        ${a.notes ? `<div class="da-item-note">${a.notes}</div>` : ''}
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="da-item-amt${a.isLiability?' liab':''}">${a.isLiability?'▲':''}${fmtM(a.amount)}</div>
+        <button class="da-item-del" onclick="deleteDeclared(${a.id})">削除</button>
+      </div>
+    </div>`;
+  };
+  let html = assets.map(renderItem).join('');
+  if(liabs.length > 0){
+    html += `<div class="da-liab-section">
+      <div class="da-section-label">負債</div>
+      ${liabs.map(renderItem).join('')}
+    </div>`;
+  }
+  list.innerHTML = html;
+}
+
+function updateKpiDeclared() {
+  const c = currentClient;
+  const assets = currentDeclared.filter(a=>!a.isLiability);
+  const liabs  = currentDeclared.filter(a=>a.isLiability);
+  const decAssetTotal = assets.reduce((s,a)=>s+a.amount,0);
+  const decLiabTotal  = liabs.reduce((s,a)=>s+a.amount,0);
+  const newTotal = c.mfMeTotal + decAssetTotal;
+  const mfPct = newTotal>0 ? Math.round(c.mfMeTotal/newTotal*100) : 100;
+  document.getElementById('kTotal').textContent = fmt(newTotal);
+  document.getElementById('kBarMf').style.width = mfPct+'%';
+  document.getElementById('kBarDec').style.width = (100-mfPct)+'%';
+  document.getElementById('kMfAmt').textContent = fmtM(c.mfMeTotal);
+  document.getElementById('kDecAmt').textContent = fmtM(decAssetTotal);
+  document.getElementById('daCompleteness').textContent = '資産把握率 '+mfPct+'%';
+  // 負債
+  const meLiab = c.mfMeLiab||0;
+  const totalLiab = meLiab + decLiabTotal;
+  document.getElementById('kLiab').textContent = fmt(totalLiab);
+  document.getElementById('kLiabMeAmt').textContent = fmtM(meLiab);
+  const decLiabRow = document.getElementById('kLiabDecRow');
+  if(decLiabTotal>0){
+    document.getElementById('kLiabDecAmt').textContent = fmtM(decLiabTotal);
+    decLiabRow.style.display='';
+  } else { decLiabRow.style.display='none'; }
+  // 純資産
+  const net = newTotal - totalLiab;
+  const meNet = c.mfMeTotal - meLiab;
+  document.getElementById('kNet').textContent = fmt(net);
+  document.getElementById('kNetMeAmt').textContent = fmtM(meNet);
+  document.getElementById('kNetDecAmt').textContent = fmtM(decAssetTotal - decLiabTotal);
+  const meNetPct = net>0 ? Math.round(meNet/net*100) : 50;
+  document.getElementById('kNetBarMf').style.width = Math.max(0,Math.min(100,meNetPct))+'%';
+  document.getElementById('kNetBarDec').style.width = Math.max(0,Math.min(100,100-meNetPct))+'%';
+}
+
+function deleteDeclared(id) {
+  currentDeclared = currentDeclared.filter(a=>a.id!==id);
+  updateKpiDeclared();
+  renderDeclaredAssets();
+}
+
+function openDeclaredModal() {
+  setDaType('asset');
+  document.getElementById('daLabel').value='';
+  document.getElementById('daAmount').value='';
+  document.getElementById('daConfidence').value='概算';
+  document.getElementById('daDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('daNotes').value='';
+  document.getElementById('daModal').classList.remove('hidden');
+}
+function setDaType(type) {
+  selectedDaType = type;
+  const isLiab = type==='liab';
+  document.getElementById('daToggleAsset').classList.toggle('active', !isLiab);
+  document.getElementById('daToggleLiab').classList.toggle('active', isLiab);
+  document.getElementById('daModalTitle').textContent = isLiab ? '申告負債を追加' : '申告資産を追加';
+  const cats = isLiab ? liabCats : assetCats;
+  const emojis = isLiab
+    ? {住宅ローン:"🏠",車ローン:"🚗",奨学金:"🎓",カードローン:"💳",事業借入:"🏢",その他:"📋"}
+    : {不動産:"🏠",年金:"👴",保険:"🛡️",未上場株:"📊",海外資産:"🌍",その他:"📦"};
+  const catsEl = document.getElementById('modalCats');
+  catsEl.innerHTML = cats.map((c,i)=>
+    `<button class="cat-btn${i===0?' active':''}" onclick="selectCat(this,'${c}')">${emojis[c]} ${c}</button>`
+  ).join('');
+  selectedCat = cats[0];
+  document.getElementById('daLabel').placeholder = isLiab ? '例：住宅ローン（〇〇銀行）' : '例：自宅マンション（渋谷区）';
+}
+function closeDeclaredModal() {
+  document.getElementById('daModal').classList.add('hidden');
+}
+function closeDeclaredModalBg(e) {
+  if(e.target===document.getElementById('daModal')) closeDeclaredModal();
+}
+function selectCat(btn, cat) {
+  selectedCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function addDeclaredAsset() {
+  const label = document.getElementById('daLabel').value.trim();
+  const amtMan = parseFloat(document.getElementById('daAmount').value);
+  if(!label){alert('名称を入力してください');return;}
+  if(isNaN(amtMan)||amtMan<=0){alert('金額を正しく入力してください（万円）');return;}
+  const newAsset = {
+    id: Date.now(),
+    category: selectedCat,
+    label,
+    amount: amtMan * 10000,
+    isLiability: selectedDaType === 'liab',
+    confidence: document.getElementById('daConfidence').value,
+    asOfDate: document.getElementById('daDate').value || new Date().toISOString().slice(0,10),
+    notes: document.getElementById('daNotes').value.trim()
+  };
+  currentDeclared.push(newAsset);
+  updateKpiDeclared();
+  renderDeclaredAssets();
+  closeDeclaredModal();
+}
+
+function renderTodos() {
+  const pending = currentTodos.filter(t=>!t.done).length;
+  document.getElementById('todoCount').textContent = pending+'件未完了';
+  const tb = document.getElementById('cTodoBadge');
+  if(pending>0){tb.textContent='TODO '+pending+'件';tb.classList.remove('hidden')}else{tb.classList.add('hidden')}
+  document.getElementById('todoList').innerHTML = currentTodos.map(t=>`
+    <div class="todo-item">
+      <input type="checkbox" class="todo-cb" ${t.done?'checked':''} onchange="toggleTodo(${t.id})"/>
+      <div style="flex:1">
+        <div class="todo-text ${t.done?'done':''}">${t.text}</div>
+        <div class="todo-due">期限: ${t.due}</div>
+      </div>
+      <button class="todo-del" onclick="deleteTodo(${t.id})">✕</button>
+    </div>`).join('');
+}
+function toggleTodo(id){currentTodos=currentTodos.map(t=>t.id===id?{...t,done:!t.done}:t);renderTodos()}
+function deleteTodo(id){currentTodos=currentTodos.filter(t=>t.id!==id);renderTodos()}
+function addTodo(e){
+  if(e.key!=='Enter') return;
+  const txt=document.getElementById('todoInput').value.trim();
+  if(!txt) return;
+  const due=document.getElementById('dueInput').value||'未定';
+  currentTodos.push({id:Date.now(),text:txt,done:false,due});
+  document.getElementById('todoInput').value='';
+  document.getElementById('dueInput').value='';
+  renderTodos();
+}
+function updateMemoCount(){ /* legacy – no-op */ }
+
+// ── 面談ログ ──
+let currentMeetingLog = [];
+
+function renderMemoUI() {
+  const log = currentMeetingLog;
+  // ④ 面談前ブリーフ: 直近ログの followup を表示
+  const latest = log[0];
+  const brief = document.getElementById('memoBrief');
+  if(latest && latest.followup) {
+    document.getElementById('memoBriefDate').textContent = latest.date + ' の面談より';
+    document.getElementById('memoBriefBody').textContent = latest.followup;
+    brief.classList.remove('hidden');
+  } else {
+    brief.classList.add('hidden');
+  }
+  // ① 過去ログ一覧
+  document.getElementById('memoLogList').innerHTML = log.map((m,idx)=>`
+    <div class="memo-log-item">
+      <button class="memo-log-trigger" onclick="toggleMemoLog(${m.id})">
+        <span class="memo-log-date">${m.date}</span>
+        <span class="memo-log-fmt">${m.format}</span>
+        <span class="memo-log-preview">${m.hearing.slice(0,30)}…</span>
+        <span class="memo-log-arrow" id="memoArrow${m.id}">›</span>
+      </button>
+      <div class="memo-log-body" id="memoBody${m.id}">
+        <div class="memo-log-section">
+          <div class="memo-log-sec-lbl">📋 相談・申告内容</div>
+          <div class="memo-log-sec-txt">${m.hearing}</div>
+        </div>
+        <div class="memo-log-section">
+          <div class="memo-log-sec-lbl">💡 提案・アドバイス</div>
+          <div class="memo-log-sec-txt">${m.advice}</div>
+        </div>
+        <div class="memo-log-section">
+          <div class="memo-log-sec-lbl">🔜 次回引き継ぎ</div>
+          <div class="memo-log-sec-txt">${m.followup}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleMemoLog(id) {
+  const body = document.getElementById('memoBody'+id);
+  const arrow = document.getElementById('memoArrow'+id);
+  const open = body.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+}
+
+function toggleMemoForm() {
+  const form = document.getElementById('memoForm');
+  const btn = document.getElementById('memoRecBtn');
+  const hidden = form.classList.toggle('hidden');
+  btn.classList.toggle('active', !hidden);
+  if(!hidden) {
+    document.getElementById('memoFormDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('memoHearing').value = '';
+    document.getElementById('memoAdvice').value = '';
+    document.getElementById('memoFollowup').value = '';
+  }
+}
+
+function saveMemoLog() {
+  const hearing = document.getElementById('memoHearing').value.trim();
+  const advice  = document.getElementById('memoAdvice').value.trim();
+  const followup= document.getElementById('memoFollowup').value.trim();
+  if(!hearing && !advice && !followup){ alert('内容を入力してください'); return; }
+  const newLog = {
+    id: Date.now(),
+    date: document.getElementById('memoFormDate').value,
+    format: document.getElementById('memoFormFmt').value,
+    hearing, advice, followup
+  };
+  currentMeetingLog.unshift(newLog);
+  // 直近面談日を更新
+  currentClient.meeting = newLog.date;
+  document.getElementById('cMeeting').textContent = '前回面談: '+newLog.date+'（'+daysSince(newLog.date)+'）';
+  toggleMemoForm();
+  renderMemoUI();
+}
+
+function toggleClientMode() {
+  const overlay = document.getElementById('coOverlay');
+  const isHidden = overlay.classList.contains('hidden');
+  if(!isHidden){ overlay.classList.add('hidden'); return; }
+
+  const c = currentClient;
+  const net = c.total - c.liab;
+  const pct = Math.min(100, Math.round(net / c.goal.amount * 100));
+  const remaining = c.goal.targetAge - c.age;
+  const gap = c.goal.amount - net;
+  const monthly = Math.round(gap / (remaining * 12));
+  const pctColor = pct>=80?'#316FEE':pct>=50?'#ED7100':'#D02F3F';
+  const netPct = Math.round(net/c.total*100);
+  const balance = c.income - c.expense;
+  const expRatio = Math.round(c.expense/c.income*100);
+
+  // Bar
+  document.getElementById('coBarName').textContent = c.name + ' 様';
+  document.getElementById('coBarMeta').textContent = c.age+'歳・前回面談 '+daysSince(c.meeting);
+
+  // KPI strip
+  document.getElementById('coTotal').textContent = fmtM(c.total);
+  document.getElementById('coNet').textContent = fmtM(net);
+  document.getElementById('coNetSub').textContent = '純資産率 '+netPct+'%';
+  document.getElementById('coIncome').textContent = fmtM(c.income);
+  document.getElementById('coExpense').textContent = fmtM(c.expense);
+  document.getElementById('coExpenseSub').textContent = '収支 +'+fmtM(balance);
+
+  // Goal pane
+  document.getElementById('coGoalName').textContent = c.goal.label+' '+fmtM(c.goal.amount)+'（'+c.goal.targetAge+'歳まで・残り'+remaining+'年）';
+  document.getElementById('coPct').textContent = pct;
+  document.getElementById('coPct').style.color = pctColor;
+  document.getElementById('coProgFill').style.width = pct+'%';
+  document.getElementById('coGstatNet').textContent = fmtM(net);
+  document.getElementById('coGstatGap').textContent = fmtM(gap);
+  document.getElementById('coGstatMonthly').textContent = fmtM(monthly);
+
+  // Chart (mini SVG)
+  document.getElementById('coChartLatest').textContent = fmtM(c.total);
+  const trend = (c.trends && c.trends['6m']) ? c.trends['6m'].data : [c.total/10000];
+  const minV = Math.min(...trend), maxV = Math.max(...trend);
+  const pad = (maxV - minV) * 0.15 || maxV * 0.05;
+  const lo = minV - pad, hi = maxV + pad;
+  const xs = [20,96,172,248,324,400];
+  const ys = trend.map(v => 100 - Math.round((v-lo)/(hi-lo)*90));
+  const months = ['10月','11月','12月','1月','2月','3月'];
+  const pts = xs.map((x,i)=>x+','+ys[i]).join(' ');
+  const area = `M${xs[0]},${ys[0]} `+xs.slice(1).map((x,i)=>`L${x},${ys[i+1]}`).join(' ')+` L${xs[5]},105 L${xs[0]},105 Z`;
+  const svg = document.getElementById('coChartSvg');
+  svg.innerHTML = `<defs><linearGradient id="cog" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#316FEE" stop-opacity=".12"/><stop offset="100%" stop-color="#316FEE" stop-opacity="0"/></linearGradient></defs>`
+    + xs.map(x=>`<line x1="${x}" y1="5" x2="${x}" y2="95" stroke="#F0EEEC" stroke-width="1"/>`).join('')
+    + `<path d="${area}" fill="url(#cog)"/>`
+    + `<polyline points="${pts}" fill="none" stroke="#316FEE" stroke-width="2" stroke-linejoin="round"/>`
+    + xs.map((x,i)=>`<circle cx="${x}" cy="${ys[i]}" r="3" fill="#316FEE"/>`).join('')
+    + xs.map((x,i)=>`<text x="${x}" y="108" text-anchor="middle" font-size="9" fill="#B6B2AF">${months[i]}</text>`).join('')
+    + xs.map((x,i)=>`<text x="${x}" y="${ys[i]-7}" text-anchor="middle" font-size="9" fill="#5D5956" font-weight="600">${trend[i]}万</text>`).join('');
+
+  // Cashflow bars
+  document.getElementById('coCfIncTxt').textContent = fmtM(c.income);
+  document.getElementById('coCfExpTxt').textContent = fmtM(c.expense);
+  document.getElementById('coCfInc').textContent = fmtM(c.income);
+  document.getElementById('coCfExp').textContent = fmtM(c.expense);
+  document.getElementById('coCfExpBar').style.width = expRatio+'%';
+
+  // Asset class
+  const acBar = document.getElementById('coAcBar');
+  const acGrid = document.getElementById('coAcGrid');
+  const acs = c.ac.filter(a=>a.pct>0);
+  acBar.innerHTML = acs.map((a,i)=>{
+    const r = i===0?'4px 0 0 4px':i===acs.length-1?'0 4px 4px 0':'0';
+    return `<div style="width:${a.pct}%;background:${a.color};height:100%;border-radius:${r}"></div>`;
+  }).join('');
+  acGrid.innerHTML = acs.map(a=>{
+    const ico = acIconHtml(a.name);
+    return `<div class="co-ac-item">
+      <div class="co-ac-icon"><div style="width:32px;height:32px;border-radius:9px;background:${ico.bg};display:flex;align-items:center;justify-content:center;margin:0 auto">${ico.svg}</div></div>
+      <div class="co-ac-name" style="margin-top:3px">${a.name}</div>
+      <div class="co-ac-amt">${a.amt.toLocaleString()}万</div>
+      <div class="co-ac-pct" style="color:${ico.bg}">${a.pct}%</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('coUpd').textContent = c.upd;
+
+  overlay.classList.remove('hidden');
+  overlay.style.animation = 'none';
+  requestAnimationFrame(()=>{ overlay.style.animation = 'coIn .22s ease'; });
+}
+
+function switchTab(tab,btn){
+  ['assets','cashflow','accounts','dividend'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function runAI(){
+  const btn=document.getElementById('aiBtn');
+  const panel=document.getElementById('aiPanel');
+  const body=document.getElementById('aiBody');
+  const c=currentClient;
+  const net=c.total-c.liab;
+  const pct=Math.min(100,Math.round(net/c.goal.amount*100));
+  const remaining=c.goal.targetAge-c.age;
+  const gap=c.goal.amount-net;
+  const pending=currentTodos.filter(t=>!t.done).length;
+  const warnItems=c.changes.filter(ch=>ch.dir==='warn').map(ch=>ch.label);
+  const firstTodo=currentTodos.find(t=>!t.done);
+  btn.disabled=true; btn.textContent='分析中...';
+  panel.classList.remove('hidden');
+  body.textContent='データを分析中...';
+  setTimeout(()=>{
+    body.textContent=`【AIアドバイス】${c.name}様（前回面談: ${daysSince(c.meeting)}）の状況を分析しました。\n\n✅ 純資産は目標「${c.goal.label} ${fmtM(c.goal.amount)}」に対して現在${pct}%達成。残り${remaining}年で約${fmtM(gap)}の積み上げが必要です。\n\n${warnItems.length>0?'⚠️ 要注意項目: '+warnItems.join('、')+'について今日の面談で確認を推奨します。':'✅ 前回面談からの変化は概ね良好です。'}\n\n💡 未完了TODO ${pending}件が積み残されています。${firstTodo?'優先度の高い「'+firstTodo.text+'」から着手を提案します。':''}`;
+    btn.disabled=false; btn.textContent='✦ AI アドバイス生成';
+  },1800);
+}
+
+// ─── ライフプランシミュレーション ───────────────────────────────
+let lpRate = 3.0;
+let lpEndAge = 90;
+let lpEvents = [];
+let lpNextEvId = 200;
+let lpShowAssets = true;
+let lpShowCF = false;
+let lpShowScenario = false;
+let lpCFOpen = true;
+let lpEditingEvId = null;
+
+const LP_CATALOG = [
+  {id:'edu',     label:'🎓 教育費',          cfRow:'education',    impact:'expense'},
+  {id:'housing', label:'🏠 住宅（購入・改修）', cfRow:'special',     impact:'expense'},
+  {id:'car',     label:'🚗 車購入',           cfRow:'special',      impact:'expense'},
+  {id:'travel',  label:'✈️ 旅行・レジャー',   cfRow:'special',      impact:'expense'},
+  {id:'medical', label:'🏥 医療・介護',       cfRow:'special',      impact:'expense'},
+  {id:'retire',  label:'👔 退職・収入変化',   cfRow:'income_change',impact:'income_cut'},
+  {id:'inherit', label:'💰 相続・贈与',       cfRow:'income_once',  impact:'income'},
+  {id:'other',   label:'📌 その他',           cfRow:'special',      impact:'expense'},
+];
+
+function lpBY(c){ return parseInt((c.profile.birthday||'1974-01-01').split('-')[0]); }
+function lpAge(c,yr){ return yr - lpBY(c); }
+
+function lpAutoSuggest(c) {
+  const sug = []; const by = lpBY(c);
+  // Children → university
+  if(c.profile && c.profile.family) {
+    c.profile.family.forEach(m => {
+      if(['長女','長男','次女','次男','三男','三女'].some(r=>m.relation.startsWith(r))) {
+        const ca = parseInt(m.age)||0;
+        const uniYr = 2026 + Math.max(0, 18 - ca);
+        if(uniYr <= 2026 + (90 - lpAge(c,2026))) {
+          sug.push({id:'sug_uni_'+m.name, icon:'🎓', name:m.name+' 大学入学',
+            year:uniYr, amount:2500000, type:'edu', cfRow:'education', impact:'expense',
+            note:'入学費・初年度学費概算'});
+        }
+      }
+    });
+  }
+  // Retirement at 65
+  const retYr = by + 65;
+  if(retYr >= 2026) sug.push({id:'sug_retire', icon:'👔', name:'定年退職（収入変化）',
+    year:retYr, amount:0, type:'retire', cfRow:'income_change', impact:'income_cut',
+    note:'65歳定年退職想定'});
+  // Housing from profile note
+  if(c.profile && c.profile.note && c.profile.note.includes('住宅'))
+    sug.push({id:'sug_housing', icon:'🏠', name:'住宅リフォーム・繰上返済',
+      year:Math.min(retYr - 1, 2028), amount:5000000, type:'housing', cfRow:'special',
+      impact:'expense', note:'プロフィールより'});
+  return sug;
+}
+
+function openLifePlan() {
+  const c = currentClient;
+  lpEvents = (c.lpEvents||[]).map(e=>({...e}));
+  lpNextEvId = 200 + lpEvents.length;
+  lpShowAssets = true; lpShowCF = false; lpShowScenario = false; lpCFOpen = false;
+  lpRate = 3.0;
+  document.getElementById('lpClientName').textContent = c.name+'（'+lpAge(c,2026)+'歳）';
+  document.getElementById('lpRateSlider').value = lpRate;
+  document.getElementById('lpRateVal').textContent = lpRate.toFixed(1)+'%';
+  document.getElementById('lpEndAge').value = 90; lpEndAge = 90;
+  document.getElementById('lpSerAssets').classList.add('active-asset');
+  document.getElementById('lpSerScenario').classList.remove('active-scenario');
+  // Suggestions
+  window._lpSugs = lpAutoSuggest(c);
+  const sugDiv = document.getElementById('lpSuggestions');
+  sugDiv.innerHTML = window._lpSugs.length
+    ? '<div class="lp-sug-hdr">💡 プロフィールからの提案</div>'
+      + window._lpSugs.map(s=>`<div class="lp-sug-item">
+          <input type="checkbox" class="lp-sug-check" id="sugchk_${s.id}" onchange="toggleLPSug(this,'${s.id}')">
+          <label for="sugchk_${s.id}" class="lp-sug-name">${s.icon} ${s.name}</label>
+          <span class="lp-sug-detail">${s.year}年${s.amount>0?' ・ '+fmtM(s.amount):''}</span>
+          <button class="lp-sug-edit" onclick="editLPSug('${s.id}')">編集</button>
+        </div>`).join('')
+    : '';
+  document.getElementById('lpCFInner').innerHTML = '';
+  document.getElementById('lpCFInner').classList.add('open');
+  document.getElementById('lpOverlay').classList.remove('hidden');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>renderLifePlan()));
+}
+
+function closeLifePlan() { document.getElementById('lpOverlay').classList.add('hidden'); }
+
+function toggleLPSug(cb, id) {
+  const s = (window._lpSugs||[]).find(x=>x.id===id);
+  if(!s) return;
+  cb.closest('.lp-sug-item').classList.toggle('checked', cb.checked);
+  if(cb.checked) lpEvents.push({id:lpNextEvId++, ...s, fromSug: s.id});
+  else lpEvents = lpEvents.filter(e=>e.fromSug !== s.id);
+  renderLifePlan();
+}
+function editLPSug(id) {
+  const s = (window._lpSugs||[]).find(x=>x.id===id);
+  if(s) openLPEventModal(null, s);
+}
+
+function toggleLPSeries(series) {
+  if(series==='assets')   lpShowAssets   = !lpShowAssets;
+  else if(series==='cf')  lpShowCF       = !lpShowCF;
+  else                    lpShowScenario = !lpShowScenario;
+  document.getElementById('lpSerAssets').classList.toggle('active-asset', lpShowAssets);
+  document.getElementById('lpSerScenario').classList.toggle('active-scenario', lpShowScenario);
+  renderLifePlan();
+}
+
+function onLPRateChange(val) {
+  lpRate = parseFloat(val)||0;
+  lpEndAge = parseInt(document.getElementById('lpEndAge').value)||90;
+  document.getElementById('lpRateVal').textContent = lpRate.toFixed(1)+'%';
+  renderLifePlan();
+}
+
+function simulateLP(rate) {
+  const c = currentClient;
+  const by = lpBY(c);
+  const startYr = 2026, endYr = startYr + (lpEndAge - lpAge(c,startYr));
+  const retireAge = 65;
+  let assets = Math.max((c.total||0) - (c.liab||0), 0);
+  const annualInc = c.income||0;
+  const annualExp = Math.round((c.income||0) * 0.65);
+  const pension   = Math.min(Math.round(annualInc*0.25), 2400000) + 800000;
+  const results = [];
+  for(let yr = startYr; yr <= endYr; yr++) {
+    const age = yr - by;
+    const retired = age >= retireAge;
+    const salary    = retired ? 0 : annualInc;
+    const psnInc    = retired ? pension : 0;
+    const investRet = Math.round(Math.max(assets,0) * rate / 100);
+    const incOnce   = lpEvents.filter(e=>e.year===yr&&e.cfRow==='income_once').reduce((s,e)=>s+e.amount,0);
+    const totalInc  = salary + psnInc + investRet + incOnce;
+    const livingExp = retired ? Math.round(annualExp*0.85) : annualExp;
+    const eduExp    = lpEvents.filter(e=>e.year===yr&&e.cfRow==='education').reduce((s,e)=>s+e.amount,0);
+    const specExp   = lpEvents.filter(e=>e.year===yr&&e.cfRow==='special').reduce((s,e)=>s+e.amount,0);
+    const totalExp  = livingExp + eduExp + specExp;
+    const balance   = totalInc - totalExp;
+    assets += balance;
+    results.push({yr,age,salary,psnInc,investRet,incOnce,totalInc,livingExp,eduExp,specExp,totalExp,balance,assets,
+      hasEv:lpEvents.some(e=>e.year===yr)});
+  }
+  return results;
+}
+
+function renderLifePlan() {
+  const data = simulateLP(lpRate);
+  const dataOpt = lpShowScenario ? simulateLP(lpRate+1.0) : null;
+  const dataPes = lpShowScenario ? simulateLP(Math.max(0,lpRate-1.0)) : null;
+  renderLPChart(data, dataOpt, dataPes);
+  renderLPEventsList();
+  renderLPCF(data);
+}
+
+function renderLPChart(data, dataOpt, dataPes) {
+  const wrap = document.getElementById('lpChartWrap');
+  if(!wrap) return;
+  const TW = wrap.getBoundingClientRect().width;
+  if(!TW) return;
+  const TH=252, ml=68, mr=72, mt=52, mb=40;
+  const W=TW-ml-mr, H=TH-mt-mb, n=data.length;
+  if(n<2) return;
+  const xi = i => ml + (i/(n-1))*W;
+  const allY = [
+    ...data.map(d=>d.assets),
+    ...(dataOpt||[]).map(d=>d.assets),
+    ...(dataPes||[]).map(d=>d.assets),
+    ...(lpShowCF?[...data.map(d=>d.totalInc),...data.map(d=>d.totalExp)]:[]),
+    (currentClient.goal&&currentClient.goal.amount)||0, 0
+  ].filter(v=>isFinite(v));
+  const maxY = Math.max(...allY)*1.12, minY = Math.min(...allY,0);
+  const rangeY = maxY-minY||1;
+  const yi = v => mt + H - ((v-minY)/rangeY)*H;
+  const fmtY = v => { const m=Math.round(v/10000); return Math.abs(m)>=10000?(m/10000).toFixed(1)+'億':m.toLocaleString()+'万'; };
+
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${TW}" height="${TH}">`;
+
+  // Grid + Y labels
+  for(let i=0;i<=5;i++){
+    const v=minY+rangeY*i/5, y=yi(v);
+    s+=`<line x1="${ml}" y1="${y.toFixed(1)}" x2="${ml+W}" y2="${y.toFixed(1)}" stroke="#F0EEEC" stroke-width="1"/>`;
+    s+=`<text x="${ml-5}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="9" fill="#B6B2AF">${fmtY(v)}</text>`;
+  }
+  // Zero line
+  if(minY<0){const y0=yi(0);s+=`<line x1="${ml}" y1="${y0.toFixed(1)}" x2="${ml+W}" y2="${y0.toFixed(1)}" stroke="#D02F3F" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/><text x="${ml+4}" y="${(y0-4).toFixed(1)}" font-size="9" fill="#D02F3F">資産枯渇</text>`;}
+  // Goal line
+  const gAmt = currentClient.goal&&currentClient.goal.amount;
+  if(gAmt){const yg=yi(gAmt);s+=`<line x1="${ml}" y1="${yg.toFixed(1)}" x2="${ml+W}" y2="${yg.toFixed(1)}" stroke="#2BA84A" stroke-width="1.8" stroke-dasharray="6,4" opacity="0.85"/><text x="${ml+W+4}" y="${(yg+3.5).toFixed(1)}" font-size="9" fill="#2BA84A" font-weight="600">目標</text>`;}
+  // X axis labels (every 5 yrs)
+  data.forEach((d,i)=>{
+    if(d.age%5===0||i===0||i===n-1){
+      const x=xi(i);
+      s+=`<line x1="${x.toFixed(1)}" y1="${mt+H}" x2="${x.toFixed(1)}" y2="${mt+H+4}" stroke="#D3D1CF" stroke-width="1"/>`;
+      s+=`<text x="${x.toFixed(1)}" y="${mt+H+14}" text-anchor="middle" font-size="9" fill="#B6B2AF">${d.yr}</text>`;
+      s+=`<text x="${x.toFixed(1)}" y="${mt+H+25}" text-anchor="middle" font-size="9" fill="#B6B2AF">${d.age}歳</text>`;
+    }
+  });
+  // Event flags (behind lines)
+  const evYrs = [...new Set(lpEvents.map(e=>e.year))];
+  evYrs.forEach(yr=>{
+    const idx=data.findIndex(d=>d.yr===yr); if(idx<0)return;
+    const x=xi(idx), evs=lpEvents.filter(e=>e.year===yr);
+    s+=`<line x1="${x.toFixed(1)}" y1="${mt}" x2="${x.toFixed(1)}" y2="${mt+H}" stroke="#ED7100" stroke-width="1" stroke-dasharray="3,3" opacity="0.45"/>`;
+    s+=`<rect x="${(x-2).toFixed(1)}" y="${mt}" width="4" height="8" rx="1" fill="#ED7100"/>`;
+    const lbl=evs.map(e=>(e.icon||'📌')+e.name.substring(0,5)).join(' ');
+    s+=`<text transform="rotate(-40,${x.toFixed(1)},${(mt+9).toFixed(1)})" x="${x.toFixed(1)}" y="${(mt+9).toFixed(1)}" font-size="9" fill="#ED7100">${lbl}</text>`;
+  });
+  // Helper: polyline
+  const pl=(ds,get,col,w,dash,op)=>{
+    const pts=ds.map((d,i)=>`${xi(i).toFixed(1)},${yi(get(d)).toFixed(1)}`).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"${dash?` stroke-dasharray="${dash}"`:''} opacity="${op||1}"/>`;
+  };
+  // Scenario band + lines
+  if(lpShowScenario&&dataOpt&&dataPes){
+    const topPts=dataOpt.map((d,i)=>`${xi(i).toFixed(1)},${yi(d.assets).toFixed(1)}`).join(' ');
+    const botPts=[...dataPes].reverse().map((d,i)=>{const oi=dataPes.length-1-i;return `${xi(oi).toFixed(1)},${yi(d.assets).toFixed(1)}`;}).join(' ');
+    s+=`<polygon points="${topPts} ${botPts}" fill="rgba(49,111,238,.07)"/>`;
+    s+=pl(dataOpt,d=>d.assets,'#4A90D9',1.5,'5,4',0.9);
+    s+=pl(dataPes,d=>d.assets,'#4A90D9',1.5,'5,4',0.9);
+    // Rate labels at right end
+    const optRate=(lpRate+1.0).toFixed(1), pesRate=Math.max(0,lpRate-1.0).toFixed(1);
+    const xEnd=xi(dataOpt.length-1), yOpt=yi(dataOpt[dataOpt.length-1].assets), yPes=yi(dataPes[dataPes.length-1].assets);
+    s+=`<text x="${(xEnd+4).toFixed(1)}" y="${(yOpt+3).toFixed(1)}" font-size="9" fill="#4A90D9" font-weight="600">楽観 ${optRate}%</text>`;
+    s+=`<text x="${(xEnd+4).toFixed(1)}" y="${(yPes+3).toFixed(1)}" font-size="9" fill="#4A90D9" font-weight="600">悲観 ${pesRate}%</text>`;
+  }
+  // CF lines
+  if(lpShowCF){
+    s+=pl(data,d=>d.totalInc,'#316FEE',1.5,'5,3',0.85);
+    s+=pl(data,d=>d.totalExp,'#D02F3F',1.5,'5,3',0.85);
+  }
+  // Main asset line
+  if(lpShowAssets){
+    if(data.some(d=>d.assets<0))s+=pl(data,d=>d.assets,'#D02F3F',2,'3,2',0.6);
+    s+=pl(data.map(d=>({...d,assets:Math.max(d.assets,0)})),d=>d.assets,'#181716',2.5,null,1);
+  }
+  // Axes
+  s+=`<line x1="${ml}" y1="${mt}" x2="${ml}" y2="${mt+H}" stroke="#D3D1CF" stroke-width="1"/>`;
+  s+=`<line x1="${ml}" y1="${mt+H}" x2="${ml+W}" y2="${mt+H}" stroke="#D3D1CF" stroke-width="1"/>`;
+  s+='</svg>';
+  wrap.innerHTML = s;
+}
+
+function renderLPEventsList() {
+  const el = document.getElementById('lpEventsList'); if(!el) return;
+  const wrap = document.getElementById('lpEvManualWrap');
+  const manualEvs = lpEvents.filter(e => !e.fromSug);
+  if(!manualEvs.length){ el.innerHTML=''; if(wrap) wrap.style.display='none'; return; }
+  if(wrap) wrap.style.display='';
+  el.innerHTML = [...manualEvs].sort((a,b)=>a.year-b.year).map(e=>
+    `<div class="lp-ev-chip" onclick="openLPEventModal(${e.id})">
+      <span class="lp-ev-chip-yr">${e.year}年</span>
+      <span class="lp-ev-chip-name">${e.icon||'📌'} ${e.name}</span>
+      ${e.amount>0?`<span class="lp-ev-chip-amt">${fmtM(e.amount)}</span>`:''}
+      <button class="lp-ev-del" onclick="event.stopPropagation();deleteLPEvent(${e.id})">✕</button>
+    </div>`).join('');
+}
+
+function renderLPCF(data) {
+  const fmtCF = v => { const m=Math.round(v/10000); if(!m)return '—'; return (m<0?'▲':'')+Math.abs(m).toLocaleString()+'万'; };
+  const fmtBal = v => { const m=Math.round(v/10000); const col=m>=0?'color:#316FEE':'color:#D02F3F'; return `<span style="${col}">${m>=0?'+':''}${m.toLocaleString()}万</span>`; };
+  const evSet = new Set(lpEvents.map(e=>e.year));
+  const hdrs = data.map(d=>`<th class="${evSet.has(d.yr)?'cf-col-event-hdr':''}" style="text-align:right">${d.yr}<br><span style="font-weight:400;color:#B6B2AF">${d.age}歳</span></th>`).join('');
+  const ROWS = [
+    {l:'給与収入', k:'salary',    sub:true},
+    {l:'年金収入', k:'psnInc',    sub:true},
+    {l:'運用益',   k:'investRet', sub:true},
+    {l:'特別収入', k:'incOnce',   sub:true},
+    {l:'収入計',   k:'totalInc',  cls:'cf-row-subtotal'},
+    {l:'生活費',   k:'livingExp', sub:true, neg:true},
+    {l:'教育費',   k:'eduExp',    sub:true, neg:true},
+    {l:'特別支出', k:'specExp',   sub:true, neg:true},
+    {l:'支出計',   k:'totalExp',  cls:'cf-row-subtotal', neg:true},
+    {l:'年間収支', k:'balance',   cls:'cf-row-subtotal', bal:true},
+    {l:'資産残高', k:'assets',    cls:'cf-row-assets',   ast:true},
+  ];
+  const trs = ROWS.map(r=>{
+    const cells = data.map(d=>{
+      const v=d[r.k], cc=evSet.has(d.yr)?'cf-col-event':'';
+      if(r.ast){ const col=v<0?'color:#D02F3F;font-weight:700':'color:#181716;font-weight:700'; return `<td class="${cc}" style="${col}">${fmtCF(v)}</td>`; }
+      if(r.bal) return `<td class="${cc}">${fmtBal(v)}</td>`;
+      if(r.neg&&v>0) return `<td class="${cc}" style="${r.sub?'color:#B6B2AF':''}">▲${Math.abs(Math.round(v/10000)).toLocaleString()}万</td>`;
+      return `<td class="${cc}" style="${r.sub?'color:#B6B2AF':''}">${fmtCF(v)}</td>`;
+    }).join('');
+    return `<tr class="${r.cls||''}"><td class="cf-row-label"${r.cls?' style="font-weight:700"':''}>${r.l}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('lpCFInner').innerHTML =
+    `<div style="overflow-x:auto;padding-bottom:8px"><table class="lp-cf-tbl">
+      <thead><tr><th>項目</th>${hdrs}</tr></thead>
+      <tbody>${trs}</tbody>
+    </table></div>`;
+}
+
+function toggleLPCF(btn) {
+  lpCFOpen = !lpCFOpen;
+  document.getElementById('lpCFInner').classList.toggle('open', lpCFOpen);
+  document.getElementById('lpCFArrow').textContent = lpCFOpen ? '▼' : '▶';
+  if(lpCFOpen) renderLPCF(simulateLP(lpRate));
+}
+
+function openLPEventModal(id, prefill) {
+  lpEditingEvId = id;
+  const ev = id!=null ? lpEvents.find(e=>e.id===id) : null;
+  const d = ev || prefill || {};
+  document.getElementById('lpModalTitle').textContent = ev ? 'イベントを編集' : 'イベントを追加';
+  document.getElementById('lpEvType').value   = d.type||'edu';
+  document.getElementById('lpEvName').value   = d.name||'';
+  document.getElementById('lpEvYear').value   = d.year||(2026+1);
+  document.getElementById('lpEvAmt').value    = d.amount ? Math.round(d.amount/10000) : '';
+  document.getElementById('lpEvImpact').value = d.impact||'expense';
+  document.getElementById('lpEvNote').value   = d.note||'';
+  document.getElementById('lpEventModal').classList.remove('hidden');
+}
+function closeLPEventModal() {
+  document.getElementById('lpEventModal').classList.add('hidden');
+  lpEditingEvId = null;
+}
+function onLPEvTypeChange(type) {
+  const cat = LP_CATALOG.find(c=>c.id===type);
+  if(cat) document.getElementById('lpEvImpact').value = cat.impact;
+}
+function saveLPEvent() {
+  const type   = document.getElementById('lpEvType').value;
+  const name   = document.getElementById('lpEvName').value.trim() || (LP_CATALOG.find(c=>c.id===type)||{}).label||'イベント';
+  const year   = parseInt(document.getElementById('lpEvYear').value)||2027;
+  const amount = (parseFloat(document.getElementById('lpEvAmt').value)||0)*10000;
+  const impact = document.getElementById('lpEvImpact').value;
+  const note   = document.getElementById('lpEvNote').value.trim();
+  const cat    = LP_CATALOG.find(c=>c.id===type)||LP_CATALOG[LP_CATALOG.length-1];
+  const icon   = cat.label.split(' ')[0];
+  const cfRow  = impact==='income'?'income_once':impact==='income_cut'?'income_change':cat.cfRow;
+  if(lpEditingEvId!=null){ const ev=lpEvents.find(e=>e.id===lpEditingEvId); if(ev) Object.assign(ev,{name,year,amount,type,cfRow,impact,note,icon}); }
+  else lpEvents.push({id:lpNextEvId++,name,year,amount,type,cfRow,impact,note,icon});
+  closeLPEventModal();
+  renderLifePlan();
+}
+function deleteLPEvent(id) { lpEvents=lpEvents.filter(e=>e.id!==id); renderLifePlan(); }
+
+// 初期化
+selectClient(0);
+</script>
+</body>
+</html>
