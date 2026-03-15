@@ -49,7 +49,7 @@ body{font-family:'Hiragino Sans','Meiryo',sans-serif;background:#F6F6F5;display:
 /* ─ Changes ─ */
 .changes-card{padding:14px 20px;margin-bottom:12px}
 .changes-title{font-size:11px;font-weight:600;color:#5D5956;margin-bottom:10px}
-.changes-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.changes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .change-item{border-radius:8px;padding:10px 12px}
 .change-label{font-size:10px;color:#B6B2AF;margin-bottom:4px}
 .change-value{font-size:16px;font-weight:700;display:flex;align-items:center;gap:4px}
@@ -504,14 +504,16 @@ tr:nth-child(even) td{background:#F9F9F8}
 .cat-level-btn{padding:4px 12px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;color:#B6B2AF;background:none;transition:all .1s}
 .cat-level-btn.active{background:#fff;color:#181716;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 
-/* ─ Shareboard toggle ─ */
-.share-toggle{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#F9F9F8;border-radius:8px;margin-bottom:12px;cursor:pointer;border:1px solid #E7E5E4;font-family:inherit;font-size:12px;color:#5D5956}
-.share-toggle:hover{background:#F0EEEC}
-.share-toggle.active{background:rgba(49,111,238,.08);border-color:rgba(49,111,238,.3);color:#316FEE}
-.share-icon{font-size:14px}
-.toggle-pill{width:28px;height:16px;border-radius:8px;background:#E7E5E4;position:relative;transition:background .15s;margin-left:auto;flex-shrink:0}
+/* ─ Shareboard toggle（ヘッダー内） ─ */
+#sbShareWrap{display:inline-flex}
+.sb-share-btn{display:flex;align-items:center;gap:7px;padding:6px 12px;background:#F9F9F8;border-radius:8px;cursor:pointer;border:1px solid #E7E5E4;font-family:inherit;font-size:11px;color:#5D5956;white-space:nowrap;transition:background .15s,border-color .15s}
+.sb-share-btn:hover{background:#F0EEEC}
+.sb-share-btn.active{background:rgba(49,111,238,.07);border-color:rgba(49,111,238,.35);color:#316FEE}
+.sb-share-label{line-height:1.3;text-align:left}
+.sb-share-name{font-size:9px;opacity:.65;margin-top:1px}
+.toggle-pill{width:28px;height:16px;border-radius:8px;background:#D4D2D0;position:relative;transition:background .15s;flex-shrink:0}
 .toggle-pill.on{background:#316FEE}
-.toggle-thumb{width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .15s}
+.toggle-thumb{width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.15)}
 .toggle-thumb.on{left:14px}
 
 /* ─ Client Mode ─ */
@@ -618,6 +620,17 @@ tr:nth-child(even) td{background:#F9F9F8}
       </div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
+      <!-- シェアボードトグル（パートナー連携クライアントのみ表示） -->
+      <div id="sbShareWrap" class="hidden">
+        <button class="sb-share-btn" id="shareToggle" onclick="toggleShareboard()">
+          <span style="font-size:13px">👫</span>
+          <div class="sb-share-label">
+            <div id="shareToggleLabel">シェアボード</div>
+            <div class="sb-share-name" id="shareToggleSub">パートナー資産を含める</div>
+          </div>
+          <div class="toggle-pill" id="togglePill"><div class="toggle-thumb" id="toggleThumb"></div></div>
+        </button>
+      </div>
       <button class="client-mode-btn" onclick="toggleClientMode()">👤 クライアントモード</button>
     </div>
   </div>
@@ -629,7 +642,6 @@ tr:nth-child(even) td{background:#F9F9F8}
       <div class="change-item" style="background:rgba(49,111,238,.08)"><div class="change-label">純資産</div><div class="change-value income"><span class="change-icon">↑</span>+152万円</div><div class="change-note">前月比 +1.2%</div></div>
       <div class="change-item" style="background:rgba(208,47,63,.08)"><div class="change-label">月間支出</div><div class="change-value expense-c"><span class="change-icon">⚠</span>+42万円</div><div class="change-note">増加傾向 ⚠️</div></div>
       <div class="change-item" style="background:rgba(208,47,63,.08)"><div class="change-label">国内株比率</div><div class="change-value expense-c"><span class="change-icon">⚠</span>+2%</div><div class="change-note">目標比オーバー</div></div>
-      <div class="change-item" style="background:rgba(182,178,175,.1)"><div class="change-label">積み残しTODO</div><div class="change-value" style="color:#B6B2AF"><span class="change-icon">—</span>2件</div><div class="change-note">前回面談より</div></div>
     </div>
   </div>
 
@@ -686,19 +698,11 @@ tr:nth-child(even) td{background:#F9F9F8}
       <div><div class="goal-stat-label">現在の純資産</div><div class="goal-stat-val income" id="goalCurrent">¥1.0億</div></div>
       <div><div class="goal-stat-label">残り不足額</div><div class="goal-stat-val" id="goalGap">¥9,723万</div></div>
       <div><div class="goal-stat-label">必要月間積立（概算）</div><div class="goal-stat-val" id="goalMonthly">¥62万</div></div>
+      <div><div class="goal-stat-label">想定利回り（年率）</div><div class="goal-stat-val" id="goalReturnRate" style="color:#316FEE">3.0%</div></div>
     </div>
     <div style="text-align:right;margin-top:10px;padding-top:10px;border-top:1px solid #F6F6F5">
       <button class="lp-open-btn" onclick="openLifePlan()">📊 ライフプランシミュレーションを開く →</button>
     </div>
-  </div>
-
-  <!-- Shareboard Toggle (田中・山本のみ表示) -->
-  <div id="shareToggleWrap" class="hidden">
-    <button class="share-toggle" id="shareToggle" onclick="toggleShareboard()">
-      <span class="share-icon">👫</span>
-      <span id="shareToggleLabel">MF シェアボード連携（パートナー資産を含める）</span>
-      <div class="toggle-pill" id="togglePill"><div class="toggle-thumb" id="toggleThumb"></div></div>
-    </button>
   </div>
 
   <!-- Declared Assets Panel -->
@@ -963,6 +967,18 @@ tr:nth-child(even) td{background:#F9F9F8}
     </div>
     <button class="lp-exit-btn" onclick="closeLifePlan()">← 閉じる</button>
   </div>
+  <div id="lpGoalBanner" style="background:#FFF8F0;border-bottom:1px solid #FADDB3;padding:8px 32px;display:flex;align-items:center;gap:16px;font-size:12px;flex-wrap:wrap">
+    <span style="font-weight:700;color:#ED7100">🎯 目標</span>
+    <span id="lpGoalBannerLabel" style="color:#3D3A37;font-weight:600"></span>
+    <span style="color:#D3D1CF">|</span>
+    <span style="color:#5D5956">達成率 <strong id="lpGoalBannerPct" style="color:#ED7100"></strong></span>
+    <span style="color:#D3D1CF">|</span>
+    <span style="color:#5D5956">現在の純資産 <strong id="lpGoalBannerNet" style="color:#181716"></strong></span>
+    <span style="color:#D3D1CF">|</span>
+    <span style="color:#5D5956">残り不足額 <strong id="lpGoalBannerGap" style="color:#D02F3F"></strong></span>
+    <span style="color:#D3D1CF">|</span>
+    <span style="color:#5D5956">月間積立試算（利回り<span id="lpGoalBannerRate" style="color:#316FEE;font-weight:700"></span>） <strong id="lpGoalBannerMonthly" style="color:#316FEE"></strong></span>
+  </div>
   <div class="lp-content">
     <!-- Controls -->
     <div class="lp-controls">
@@ -1223,6 +1239,13 @@ tr:nth-child(even) td{background:#F9F9F8}
         <label class="form-label">目標達成年齢（歳）</label>
         <input class="form-input" id="goalAgeInput" type="number" min="0" placeholder="例：65"/>
       </div>
+      <div class="form-row">
+        <label class="form-label">想定利回り（年率 %）</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input class="form-input" id="goalRateInput" type="number" min="0" max="15" step="0.5" placeholder="例：3.0" style="width:100px"/>
+          <span style="font-size:11px;color:#B6B2AF">月間積立試算・ライフプランに反映</span>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="modal-cancel" onclick="closeGoalEdit()">キャンセル</button>
@@ -1296,10 +1319,37 @@ function acIconHtml(name) {
   return {bg:'#90A4AE',svg:`<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="white" stroke-width="2"/><circle cx="10" cy="10" r="2" fill="white"/></svg>`};
 }
 
+// ── シェアボード ヘルパー ──────────────────────────────────────
+function mergeAc(acA, acB) {
+  const result = acA.map(a => ({...a}));
+  acB.forEach(b => {
+    const ex = result.find(a => a.name === b.name);
+    if(ex) { ex.amt += b.amt; }
+    else { result.push({...b}); }
+  });
+  const total = result.reduce((s,a) => s+a.amt, 0);
+  result.forEach(a => a.pct = Math.round(a.amt/total*100));
+  return result;
+}
+function getEffectiveAc() {
+  const c = currentClient;
+  if(!shareboardOn || !c.partner) return c.ac;
+  return mergeAc(c.ac, c.partner.ac);
+}
+function getEffectiveTrendData(period) {
+  const c = currentClient;
+  const td = c.trends[period]; if(!td) return td;
+  if(!shareboardOn || !c.partner || !c.partner.trends[period]) return td;
+  const ptd = c.partner.trends[period];
+  return { labels: td.labels, data: td.data.map((v,i) => v + (ptd.data[i]||0)) };
+}
+// ─────────────────────────────────────────────────────────────
+
 function renderAcGrid() {
   const c = window.currentClient; if(!c) return;
   const el = document.getElementById('acGrid'); if(!el) return;
-  el.innerHTML = c.ac.filter(a=>a.pct>0).map(a=>{
+  const ac = getEffectiveAc();
+  el.innerHTML = ac.filter(a=>a.pct>0).map(a=>{
     const ico = acIconHtml(a.name);
     return `<div class="ac-item">
       <div class="ac-icon"><div class="ac-icon-mark" style="background:${ico.bg}">${ico.svg}</div></div>
@@ -1320,13 +1370,12 @@ const clients = [
   {
     name:"田中 誠一", age:52, rBg:"rgba(49,111,238,.1)", rFg:"#316FEE",
     total:130765015, mfMeTotal:80765015, liab:28000000, mfMeLiab:28000000, upd:"2分前", status:"要注意", mfUpdated:"2026-03-15",
-    goal:{label:"老後資金", amount:200000000, targetAge:65},
+    goal:{label:"老後資金", amount:200000000, targetAge:65, returnRate:3.0},
     meeting:"2026-02-15",
     changes:[
       {label:"純資産",value:"+152万円",dir:"up",note:"前回面談比 +1.2%"},
       {label:"月間支出",value:"+42万円",dir:"warn",note:"前回面談比 増加傾向"},
       {label:"目標達成率",value:"+0.8%",dir:"up",note:"50.4% → 51.2%"},
-      {label:"積み残しTODO",value:"2件",dir:"neutral",note:"前回面談より"},
     ],
     todos:[
       {id:1,text:"外国株ファンドへのリバランス検討",done:false,due:"2026-04-30"},
@@ -1412,24 +1461,58 @@ const clients = [
       birthday:"1981-06-30", area:"埼玉県さいたま市",
       occupation:"会社員（一般職）", employer:"中規模サービス業", income_type:"給与",
       family:[
-        {relation:"配偶者",name:"鈴木 浩二",age:47,note:"会社員"},
-        {relation:"長男",name:"鈴木 拓也",age:14,note:"中学生"},
+        {relation:"配偶者",name:"田中 恵子",age:49,note:"会社員"},
+        {relation:"長女",name:"田中 さくら",age:20,note:"大学生"},
       ],
       hobbies:"料理・映画鑑賞",
       note:"住宅ローン借り換えを検討中。ゆうちょ連携エラーの解消が急務。",
+    },
+    // ── MF シェアボード連携パートナー（田中 恵子・49歳・会社員）──
+    partner:{
+      name:"田中 恵子", age:49, occupation:"会社員（IT系）",
+      total:35200000, liab:0,
+      income:6200000, expense:180000,
+      mfUpdated:"2026-03-14",
+      ac:[
+        {name:"現金・預金", amt:1230, pct:35, color:"#6B9BD2", icon:"🏦"},
+        {name:"株式",        amt:880,  pct:25, color:"#316FEE", icon:"📈"},
+        {name:"投資信託",    amt:1060, pct:30, color:"#95C17B", icon:"💹"},
+        {name:"保険",        amt:350,  pct:10, color:"#F4A261", icon:"🛡️"},
+      ],
+      holdings:[
+        {name:"eMAXIS Slim 全世界株式", type:"投資信託", amt:720, gain:"+15%", cat:"投資信託"},
+        {name:"ニデック（日本電産）",   type:"国内株",   amt:540, gain:"+8%",  cat:"株式"},
+        {name:"楽天・全米株式インデックス", type:"投資信託", amt:340, gain:"+18%", cat:"投資信託"},
+        {name:"三井住友FG",            type:"国内株",   amt:340, gain:"+22%", cat:"株式"},
+      ],
+      trends:{
+        '6m':{labels:['10月','11月','12月','1月','2月','3月'],  data:[2910,2980,3060,3130,3220,3520]},
+        '1y':{labels:['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'], data:[2450,2510,2570,2630,2700,2780,2910,2980,3060,3130,3220,3520]},
+        '3y':{labels:['2023','','','','2024','','','','2025','','','','2026'], data:[1900,2000,2100,2180,2280,2370,2490,2600,2720,2860,3000,3250,3520]},
+        '5y':{labels:['2021','2022','2023','2024','2025','2026/3'], data:[1100,1450,2100,2600,3180,3520]},
+      },
+      expMonthly:{
+        '2026':[185000,178000,182000,null,null,null,null,null,null,null,null,null],
+        '2025':[180000,175000,182000,188000,176000,210000,195000,190000,183000,180000,175000,220000],
+        '2024':[172000,168000,175000,180000,170000,200000,188000,183000,175000,172000,168000,210000],
+      },
+      incMonthly:{
+        '2026':[517000,517000,517000,null,null,null,null,null,null,null,null,null],
+        '2025':[517000,517000,517000,517000,517000,1317000,517000,517000,517000,517000,517000,1217000],
+        '2024':[495000,495000,495000,495000,495000,1260000,495000,495000,495000,495000,495000,1160000],
+      },
     },
   },
   // ─── 佐藤 美咲 ────────────────────────────────────────────
   {
     name:"佐藤 美咲", age:38, rBg:"rgba(126,200,200,.12)", rFg:"#7EC8C8",
     total:18520000, mfMeTotal:18520000, liab:0, mfMeLiab:0, upd:"1時間前", status:"良好", mfUpdated:"2026-03-14",
-    goal:{label:"老後資金", amount:50000000, targetAge:65},
+    goal:{label:"老後資金", amount:50000000, targetAge:65, returnRate:3.0},
     meeting:"2026-02-22",
     changes:[
       {label:"純資産",value:"+68万円",dir:"up",note:"前回面談比 +5.2%"},
       {label:"月間収入",value:"+8万円",dir:"up",note:"前年同期比 回復傾向"},
       {label:"目標達成率",value:"+1.8%",dir:"up",note:"24.7% → 26.5%"},
-      {label:"積み残しTODO",value:"1件",dir:"neutral",note:"前回面談より"},
     ],
     todos:[
       {id:1,text:"NISA積立増額タイミングの検討（月¥1万→¥3万）",done:false,due:"2026-05-31"},
@@ -1518,13 +1601,12 @@ const clients = [
   {
     name:"山本 健太", age:61, rBg:"rgba(149,193,123,.12)", rFg:"#95C17B",
     total:86400000, mfMeTotal:64800000, liab:0, mfMeLiab:0, upd:"3日前", status:"要注意", mfUpdated:"2026-03-12",
-    goal:{label:"退職後生活資金", amount:150000000, targetAge:65},
+    goal:{label:"退職後生活資金", amount:150000000, targetAge:65, returnRate:3.0},
     meeting:"2026-01-20",
     changes:[
       {label:"純資産",value:"+210万円",dir:"up",note:"前回面談比 +2.8%"},
       {label:"株式比率",value:"41%",dir:"warn",note:"定年前リバランス要検討"},
       {label:"目標達成率",value:"+1.2%",dir:"up",note:"55.6% → 56.8%"},
-      {label:"積み残しTODO",value:"3件",dir:"warn",note:"前回面談より"},
     ],
     todos:[
       {id:1,text:"退職金¥2,200万の運用基本方針書を策定",done:false,due:"2026-06-30"},
@@ -1619,18 +1701,50 @@ const clients = [
       hobbies:"ゴルフ・国内旅行・株式投資",
       note:"定年まで残り4年。退職金運用と相続対策が急務。茨城収益物件の売却タイミングも検討中。",
     },
+    // ── MF シェアボード連携パートナー（山本 智子・58歳・パート勤務）──
+    partner:{
+      name:"山本 智子", age:58, occupation:"パート勤務",
+      total:22600000, liab:0,
+      income:1800000, expense:0,
+      mfUpdated:"2026-03-12",
+      ac:[
+        {name:"現金・預金",  amt:1482, pct:65, color:"#6B9BD2", icon:"🏦"},
+        {name:"個人年金",    amt:570,  pct:25, color:"#F4A261", icon:"🛡️"},
+        {name:"投資信託",    amt:208,  pct:10, color:"#95C17B", icon:"💹"},
+      ],
+      holdings:[
+        {name:"個人年金保険（住友生命）",           type:"保険",   amt:570, gain:"+1%", cat:"個人年金"},
+        {name:"eMAXIS Slim バランス（8資産均等型）", type:"投資信託", amt:208, gain:"+9%", cat:"投資信託"},
+        {name:"定期預金（ゆうちょ銀行）",           type:"預金",   amt:780, gain:"+0%", cat:"現金・預金"},
+      ],
+      trends:{
+        '6m':{labels:['10月','11月','12月','1月','2月','3月'],  data:[2170,2190,2200,2215,2230,2260]},
+        '1y':{labels:['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'], data:[2050,2070,2090,2105,2120,2145,2170,2190,2200,2215,2230,2260]},
+        '3y':{labels:['2023','','','','2024','','','','2025','','','','2026'], data:[1820,1860,1890,1920,1950,1980,2010,2050,2090,2140,2190,2230,2260]},
+        '5y':{labels:['2021','2022','2023','2024','2025','2026/3'], data:[1580,1660,1820,1990,2190,2260]},
+      },
+      expMonthly:{
+        '2026':[0,0,0,null,null,null,null,null,null,null,null,null],
+        '2025':[0,0,0,0,0,0,0,0,0,0,0,0],
+        '2024':[0,0,0,0,0,0,0,0,0,0,0,0],
+      },
+      incMonthly:{
+        '2026':[150000,150000,150000,null,null,null,null,null,null,null,null,null],
+        '2025':[150000,150000,150000,150000,150000,150000,150000,150000,150000,150000,150000,150000],
+        '2024':[140000,140000,140000,140000,140000,140000,140000,140000,140000,140000,140000,140000],
+      },
+    },
   },
   // ─── 鈴木 花子 ────────────────────────────────────────────
   {
     name:"鈴木 花子", age:42, rBg:"rgba(244,162,97,.12)", rFg:"#F4A261",
     total:30750000, mfMeTotal:30750000, liab:18500000, mfMeLiab:18500000, upd:"5日前", status:"要注意", mfUpdated:"2026-03-10",
-    goal:{label:"教育費・住宅ローン完済", amount:50000000, targetAge:55},
+    goal:{label:"教育費・住宅ローン完済", amount:50000000, targetAge:55, returnRate:2.0},
     meeting:"2026-02-05",
     changes:[
       {label:"純資産",value:"-24万円",dir:"down",note:"前回面談比 -1.9%"},
       {label:"月間支出",value:"+89万円",dir:"warn",note:"12月冠婚葬祭が主因"},
       {label:"目標達成率",value:"-0.4%",dir:"down",note:"24.9% → 24.5%"},
-      {label:"積み残しTODO",value:"3件",dir:"warn",note:"前回面談より"},
     ],
     todos:[
       {id:1,text:"ゆうちょ銀行連携エラーを解消（期限3/20）",done:false,due:"2026-03-20"},
@@ -1786,7 +1900,7 @@ function selectClient(i) {
   const pct = Math.min(100,Math.round(net/c.goal.amount*100));
   const remaining = c.goal.targetAge - c.age;
   const gap = c.goal.amount - net;
-  const monthly = Math.round(gap/(remaining*12));
+  const monthly = calcGoalMonthly(net, c.goal.amount, remaining, c.goal.returnRate||3.0);
   const pending = currentTodos.filter(t=>!t.done).length;
 
   // Header
@@ -1854,10 +1968,11 @@ function selectClient(i) {
   document.getElementById('goalCurrent').textContent = fmtM(net);
   document.getElementById('goalGap').textContent = fmtM(gap);
   document.getElementById('goalMonthly').textContent = fmtM(monthly);
+  document.getElementById('goalReturnRate').textContent = (c.goal.returnRate!=null?c.goal.returnRate:3.0).toFixed(1)+'%';
 
   // Changes
   const cg = document.getElementById('changesGrid');
-  cg.innerHTML = c.changes.map(ch=>`
+  cg.innerHTML = c.changes.filter(ch=>ch.label!=="積み残しTODO").map(ch=>`
     <div class="change-item" style="background:${dirBg[ch.dir]}">
       <div class="change-label">${ch.label}</div>
       <div class="change-value" style="color:${dirColor[ch.dir]}"><span class="change-icon">${dirIcon[ch.dir]}</span>${ch.value}</div>
@@ -1865,12 +1980,14 @@ function selectClient(i) {
     </div>`).join('');
 
   // Shareboard
-  const stw = document.getElementById('shareToggleWrap');
-  c.partner ? stw.classList.remove('hidden') : stw.classList.add('hidden');
+  const stw = document.getElementById('sbShareWrap');
+  if(c.partner){ stw.classList.remove('hidden'); }
+  else { stw.classList.add('hidden'); }
   document.getElementById('togglePill').classList.remove('on');
   document.getElementById('toggleThumb').classList.remove('on');
   document.getElementById('shareToggle').classList.remove('active');
-  document.getElementById('shareToggleLabel').textContent = 'MF シェアボード連携（パートナー資産を含める）';
+  document.getElementById('shareToggleLabel').textContent = 'MF シェアボード';
+  document.getElementById('shareToggleSub').textContent = c.partner ? `${c.partner.name}さんの資産を含める` : 'パートナー資産を含める';
 
   // Charts & tabs
   currentCfYear = 2026; currentCfMonth = 2; currentCatLevel = 'big';
@@ -1933,8 +2050,10 @@ function renderPortfolio() {
 }
 function renderHoldings(c) {
   const hb = document.getElementById('holdingsBody'); if(!hb) return;
-  const acs = c.ac.filter(a=>a.pct>0);
-  const holdings = c.holdings || [];
+  const acs = getEffectiveAc();
+  const holdings = shareboardOn && c.partner
+    ? [...(c.holdings||[]), ...(c.partner.holdings||[]).map(h=>({...h,_partner:true}))]
+    : (c.holdings || []);
   let rows = '';
   acs.forEach(ac=>{
     const catH = holdings.filter(h=>h.cat===ac.name);
@@ -1943,7 +2062,8 @@ function renderHoldings(c) {
     rows += `<tr class="holdings-cat-header"><td colspan="3">${ac.name}</td><td class="cat-total">¥${catAmt}</td></tr>`;
     catH.forEach(h=>{
       const amtDisp = h.amt >= 10000 ? (h.amt/10000).toFixed(1).replace(/\.0$/,'')+'億' : h.amt.toLocaleString()+'万';
-      rows += `<tr><td style="font-weight:500;padding-left:20px">${h.name}</td><td><span class="h-type-badge">${h.type}</span></td><td style="text-align:right;font-weight:700">¥${amtDisp}</td><td style="text-align:right" class="${h.gain.startsWith('-')?'h-gain-neg':'h-gain-pos'}">${h.gain}</td></tr>`;
+      const badge = h._partner ? `<span style="font-size:10px;margin-left:4px;opacity:.7">👫</span>` : '';
+      rows += `<tr><td style="font-weight:500;padding-left:20px">${h.name}${badge}</td><td><span class="h-type-badge">${h.type}</span></td><td style="text-align:right;font-weight:700">¥${amtDisp}</td><td style="text-align:right" class="${h.gain.startsWith('-')?'h-gain-neg':'h-gain-pos'}">${h.gain}</td></tr>`;
     });
   });
   hb.innerHTML = rows;
@@ -2071,7 +2191,7 @@ function fmtAxis(v, step) {
 function renderTrend(period) {
   const svgEl = document.getElementById('trendSvg'); if(!svgEl) return;
   const c = currentClient;
-  const td = c.trends[period]; if(!td) return;
+  const td = getEffectiveTrendData(period); if(!td) return;
   const data = td.data, labels = td.labels, n = data.length;
   const W = svgEl.getBoundingClientRect().width || 560;
   const H = 170, pL = 62, pB = 28, pT = 12;
@@ -2860,19 +2980,32 @@ function openGoalEdit(){
   document.getElementById('goalLabelInput').value=g.label;
   document.getElementById('goalAmountInput').value=Math.round(g.amount/10000);
   document.getElementById('goalAgeInput').value=g.targetAge;
+  document.getElementById('goalRateInput').value=(g.returnRate||3.0).toFixed(1);
   document.getElementById('goalEditModal').classList.remove('hidden');
 }
 function closeGoalEdit(){ document.getElementById('goalEditModal').classList.add('hidden'); }
 function closeGoalEditBg(e){ if(e.target===document.getElementById('goalEditModal')) closeGoalEdit(); }
+function calcGoalMonthly(net, amount, remaining, returnRate) {
+  const r = (returnRate||0) / 100 / 12;
+  const n = remaining * 12;
+  if(n <= 0) return 0;
+  if(r < 0.00001) return Math.round((amount - net) / n);
+  const growth = Math.pow(1 + r, n);
+  const needed = amount - net * growth;
+  if(needed <= 0) return 0;
+  return Math.round(needed * r / (growth - 1));
+}
 function saveGoal(){
   const label=document.getElementById('goalLabelInput').value.trim();
   const amount=parseInt(document.getElementById('goalAmountInput').value)*10000;
   const targetAge=parseInt(document.getElementById('goalAgeInput').value);
+  const returnRate=parseFloat(document.getElementById('goalRateInput').value)||3.0;
   if(!label||!amount||!targetAge){alert('すべて入力してください');return;}
-  currentClient.goal={label,amount,targetAge};
+  currentClient.goal={label,amount,targetAge,returnRate};
   const net=currentClient.total-currentClient.liab;
   const pct=Math.min(100,Math.round(net/amount*100));
-  const remaining=targetAge-currentClient.age, gap=amount-net, monthly=Math.round(gap/(remaining*12));
+  const remaining=targetAge-currentClient.age, gap=amount-net;
+  const monthly=calcGoalMonthly(net, amount, remaining, returnRate);
   document.getElementById('goalSub').textContent=label+'：'+fmtM(amount)+'（'+targetAge+'歳まで・残り'+remaining+'年）';
   document.getElementById('goalPct').innerHTML=pct+'<span style="font-size:14px;font-weight:500">%</span>';
   document.getElementById('goalPct').style.color=pct>=80?'#316FEE':pct>=50?'#ED7100':'#D02F3F';
@@ -2880,24 +3013,63 @@ function saveGoal(){
   document.getElementById('goalCurrent').textContent=fmtM(net);
   document.getElementById('goalGap').textContent=fmtM(gap);
   document.getElementById('goalMonthly').textContent=fmtM(monthly);
+  document.getElementById('goalReturnRate').textContent=returnRate.toFixed(1)+'%';
   closeGoalEdit();
 }
 
 // ── シェアボード ──
 function toggleShareboard(){
   shareboardOn=!shareboardOn;
-  const c=currentClient, partner=c.partner;
+  const c=currentClient, partner=c.partner; if(!partner) return;
+
+  // ── トグルUI ──
   document.getElementById('togglePill').classList.toggle('on',shareboardOn);
   document.getElementById('toggleThumb').classList.toggle('on',shareboardOn);
   document.getElementById('shareToggle').classList.toggle('active',shareboardOn);
-  const decTotal=currentDeclared.reduce((s,a)=>s+a.amount,0);
-  const baseTotal=shareboardOn?c.total+partner.total:c.total;
-  const baseNet=shareboardOn?(c.total-c.liab+partner.total):(c.total-c.liab);
-  document.getElementById('kTotal').textContent=fmt(baseTotal);
-  document.getElementById('kNet').textContent=fmt(baseNet);
-  document.getElementById('shareToggleLabel').textContent=shareboardOn
-    ?`世帯合算表示中（${partner.name}さんの資産 ${fmtM(partner.total)} を含む）`
-    :'MF シェアボード連携（パートナー資産を含める）';
+  document.getElementById('shareToggleLabel').textContent = 'MF シェアボード';
+  document.getElementById('shareToggleSub').textContent = shareboardOn
+    ? `世帯合算中 ${fmtM(partner.total)}含む`
+    : `${partner.name}さんの資産を含める`;
+
+  // ── 総資産・純資産 KPI ──
+  const baseTotal = shareboardOn ? c.total+partner.total : c.total;
+  const baseNet   = shareboardOn ? (c.total-c.liab+partner.total) : (c.total-c.liab);
+  document.getElementById('kTotal').textContent = fmt(baseTotal);
+  document.getElementById('kNet').textContent   = fmt(baseNet);
+
+  // ── ACバー（資産クラス構成バー） ──
+  const acBarEl = document.getElementById('acBar');
+  if(acBarEl){
+    const effAc = getEffectiveAc();
+    acBarEl.innerHTML = effAc.filter(a=>a.pct>0).map((a,i,arr)=>{
+      const r = i===0?'4px 0 0 4px':i===arr.length-1?'0 4px 4px 0':'0';
+      const ico = acIconHtml(a.name);
+      return `<div class="ac-seg" style="width:${a.pct}%;background:${ico.bg};border-radius:${r}"></div>`;
+    }).join('');
+  }
+
+  // ── アセットアロケーション グリッド ──
+  renderAcGrid();
+
+  // ── 保有銘柄 ──
+  renderHoldings(c);
+
+  // ── 資産推移チャート ──
+  renderTrend(currentPeriod);
+
+  // ── 目標カード ──
+  const net = baseNet;
+  const {amount, targetAge, returnRate} = c.goal;
+  const remaining = targetAge - c.age;
+  const gap = Math.max(0, amount - net);
+  const pct = Math.min(100, Math.round(net/amount*100));
+  const monthly = calcGoalMonthly(net, amount, remaining, returnRate);
+  document.getElementById('goalCurrent').textContent = fmtM(net);
+  document.getElementById('goalGap').textContent     = fmtM(gap);
+  document.getElementById('goalMonthly').textContent = fmtM(monthly);
+  document.getElementById('goalPct').innerHTML = pct+'<span style="font-size:14px;font-weight:500">%</span>';
+  document.getElementById('goalPct').style.color = pct>=80?'#316FEE':pct>=50?'#ED7100':'#D02F3F';
+  document.getElementById('goalBar').style.width = pct+'%';
 }
 
 function renderDeclaredAssets() {
@@ -3321,7 +3493,7 @@ function openLifePlan() {
   lpEvents = (c.lpEvents||[]).map(e=>({...e}));
   lpNextEvId = 200 + lpEvents.length;
   lpShowAssets = true; lpShowCF = false; lpShowScenario = false; lpCFOpen = false;
-  lpRate = 3.0;
+  lpRate = (c.goal&&c.goal.returnRate!=null) ? c.goal.returnRate : 3.0;
   document.getElementById('lpClientName').textContent = c.name+'（'+lpAge(c,2026)+'歳）';
   document.getElementById('lpRateSlider').value = lpRate;
   document.getElementById('lpRateVal').textContent = lpRate.toFixed(1)+'%';
@@ -3342,6 +3514,18 @@ function openLifePlan() {
     : '';
   document.getElementById('lpCFInner').innerHTML = '';
   document.getElementById('lpCFInner').classList.add('open');
+  // Goal banner
+  const _g=c.goal, _net=c.total-c.liab;
+  const _rem=_g.targetAge-c.age, _gap=_g.amount-_net;
+  const _pct=Math.min(100,Math.round(_net/_g.amount*100));
+  const _monthly=calcGoalMonthly(_net,_g.amount,_rem,_g.returnRate||lpRate);
+  const _rate=(_g.returnRate!=null?_g.returnRate:lpRate);
+  document.getElementById('lpGoalBannerLabel').textContent=_g.label+'  ¥'+(_g.amount/10000).toLocaleString()+'万（'+_g.targetAge+'歳まで・残り'+_rem+'年）';
+  document.getElementById('lpGoalBannerPct').textContent=_pct+'%';
+  document.getElementById('lpGoalBannerNet').textContent=fmtM(_net);
+  document.getElementById('lpGoalBannerGap').textContent=fmtM(_gap);
+  document.getElementById('lpGoalBannerRate').textContent=_rate.toFixed(1)+'%';
+  document.getElementById('lpGoalBannerMonthly').textContent=fmtM(_monthly)+'/月';
   document.getElementById('lpOverlay').classList.remove('hidden');
   requestAnimationFrame(()=>requestAnimationFrame(()=>renderLifePlan()));
 }
